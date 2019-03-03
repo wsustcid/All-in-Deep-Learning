@@ -22,7 +22,29 @@ CUDA：是Nvidia推出的只能用于自家GPU的并行计算框架。只有安�
    CUDA 9.0 + cuDNN 7.1 + tensorflow-gpu 1.9
    ```
 
-3. 解决相关安装包和ros的冲突：
+3. cuda & driver version
+```
+CUDA 10.0: 410.48
+CUDA  9.2: 396.xx
+CUDA  9.1: 390.xx (update)
+CUDA  9.0: 384.xx
+CUDA  8.0  375.xx (GA2)
+CUDA  8.0: 367.4x
+CUDA  7.5: 352.xx
+CUDA  7.0: 346.xx
+CUDA  6.5: 340.xx
+CUDA  6.0: 331.xx
+CUDA  5.5: 319.xx
+CUDA  5.0: 304.xx
+CUDA  4.2: 295.41
+CUDA  4.1: 285.05.33
+CUDA  4.0: 270.41.19
+CUDA  3.2: 260.19.26
+CUDA  3.1: 256.40
+CUDA  3.0: 195.36.15
+```
+
+4. 解决相关安装包和ros的冲突：
 
 .bashrc 文件中注释掉关于ros环境变量的source 语句
 
