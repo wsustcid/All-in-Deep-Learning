@@ -389,3 +389,10 @@ sudo apt install libnvinfer4=4.1.2-1+cuda9.0
 ```
 
 
+
+
+
+Jupyter notebook添加python2 python3内核
+
+1. ipython kernel install --name python2  
+2. ipython kernel install --name python3  
