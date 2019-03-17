@@ -5,15 +5,11 @@
 keras.layers.Conv1D(filters, kernel_size, strides=1, padding='valid', data_format='channels_last', dilation_rate=1, activation=None, use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)
 ```
 
-1D 卷积层 (例如时序卷积)。
+1D 卷积层 (例如**时序卷积**)。
 
-该层创建了一个卷积核，该卷积核以
-单个空间（或时间）维上的层输入进行卷积，
-以生成输出张量。
-如果 `use_bias` 为 True，
-则会创建一个偏置向量并将其添加到输出中。
-最后，如果 `activation` 
-不是 `None`，它也会应用于输出。
+该层创建了一个卷积核，该卷积核以单个空间（或时间）维上的层输入进行卷积，以生成输出张量。
+如果 `use_bias` 为 True，则会创建一个偏置向量并将其添加到输出中。
+最后，如果 `activation` 不是 `None`，它也会应用于输出。
 
 当使用该层作为模型第一层时，需要提供 `input_shape` 参数（整数元组或 `None`），例如，
 `(10, 128)` 表示 10 个 128 维的向量组成的向量序列，
@@ -82,18 +78,12 @@ keras.layers.Conv2D(filters, kernel_size, strides=(1, 1), padding='valid', data_
 
 2D 卷积层 (例如对图像的空间卷积)。
 
-该层创建了一个卷积核，
-该卷积核对层输入进行卷积，
-以生成输出张量。
-如果 `use_bias` 为 True，
-则会创建一个偏置向量并将其添加到输出中。
-最后，如果 `activation` 
-不是 `None`，它也会应用于输出。
+该层创建了一个卷积核，该卷积核对层输入进行卷积，以生成输出张量。
+如果 `use_bias` 为 True，则会创建一个偏置向量并将其添加到输出中。
+最后，如果 `activation` 不是 `None`，它也会应用于输出。
 
-当使用该层作为模型第一层时，需要提供 `input_shape` 参数
-（整数元组，不包含样本表示的轴），例如，
-`input_shape=(128, 128, 3)` 表示 128x128 RGB 图像，
-在 `data_format="channels_last"` 时。
+当使用该层作为模型第一层时，需要提供 `input_shape` 参数（整数元组，不包含样本表示的轴），例如，
+`input_shape=(128, 128, 3)` 表示 128x128 RGB 图像，在 `data_format="channels_last"` 时。
 
 __参数__
 
@@ -166,14 +156,10 @@ keras.layers.SeparableConv1D(filters, kernel_size, strides=1, padding='valid', d
 
 深度方向的可分离 1D 卷积。
 
-可分离的卷积的操作包括，首先执行深度方向的空间卷积
-（分别作用于每个输入通道），紧接一个将所得输出通道
-混合在一起的逐点卷积。`depth_multiplier` 参数控
-制深度步骤中每个输入通道生成多少个输出通道。
+可分离的卷积的操作包括，首先执行深度方向的空间卷积（分别作用于每个输入通道），紧接一个将所得输出通道
+混合在一起的逐点卷积。`depth_multiplier` 参数控制深度步骤中每个输入通道生成多少个输出通道。
 
-直观地说，可分离的卷积可以理解为一种将卷积核分解成
-两个较小的卷积核的方法，或者作为 Inception 块的
-一个极端版本。
+直观地说，可分离的卷积可以理解为一种将卷积核分解成两个较小的卷积核的方法，或者作为 Inception 块的一个极端版本。
 
 __参数__
 
@@ -405,16 +391,10 @@ keras.layers.Conv2DTranspose(filters, kernel_size, strides=(1, 1), padding='vali
 
 转置卷积层 (有时被成为反卷积)。
 
-对转置卷积的需求一般来自希望使用
-与正常卷积相反方向的变换，
-即，将具有卷积输出尺寸的东西
-转换为具有卷积输入尺寸的东西，
-同时保持与所述卷积相容的连通性模式。
+对转置卷积的需求一般来自希望使用与正常卷积相反方向的变换，即，将具有卷积输出尺寸的东西转换为具有卷积输入尺寸的东西，同时保持与所述卷积相容的连通性模式。
 
-当使用该层作为模型第一层时，需要提供 `input_shape` 参数
-（整数元组，不包含样本表示的轴），例如，
-`input_shape=(128, 128, 3)` 表示 128x128 RGB 图像，
-在 `data_format="channels_last"` 时。
+当使用该层作为模型第一层时，需要提供 `input_shape` 参数（整数元组，不包含样本表示的轴），例如，
+`input_shape=(128, 128, 3)` 表示 128x128 RGB 图像，在 `data_format="channels_last"` 时。
 
 __参数__
 
@@ -506,16 +486,11 @@ keras.layers.Conv3D(filters, kernel_size, strides=(1, 1, 1), padding='valid', da
 
 3D 卷积层 (例如立体空间卷积)。
 
-该层创建了一个卷积核，
-该卷积核对层输入进行卷积，
-以生成输出张量。
-如果 `use_bias` 为 True，
-则会创建一个偏置向量并将其添加到输出中。
-最后，如果 `activation` 
-不是 `None`，它也会应用于输出。
+该层创建了一个卷积核，该卷积核对层输入进行卷积，以生成输出张量。
+如果 `use_bias` 为 True，则会创建一个偏置向量并将其添加到输出中。
+最后，如果 `activation` 不是 `None`，它也会应用于输出。
 
-当使用该层作为模型第一层时，需要提供 `input_shape` 参数
-（整数元组，不包含样本表示的轴），例如，
+当使用该层作为模型第一层时，需要提供 `input_shape` 参数（整数元组，不包含样本表示的轴），例如，
 `input_shape=(128, 128, 128, 1)` 表示 128x128x128 的单通道立体，
 在 `data_format="channels_last"` 时。
 
@@ -524,8 +499,7 @@ __参数__
 - __filters__: 整数，输出空间的维度
     （即卷积中滤波器的输出数量）。
 - __kernel_size__: 一个整数，或者 3 个整数表示的元组或列表，
-    指明 3D 卷积窗口的深度、高度和宽度。
-    可以是一个整数，为所有空间维度指定相同的值。
+    指明 3D 卷积窗口的深度、高度和宽度。可以是一个整数，为所有空间维度指定相同的值。
 - __strides__: 一个整数，或者 3 个整数表示的元组或列表，
     指明卷积沿每一个空间维度的步长。
     可以是一个整数，为所有空间维度指定相同的步长值。
@@ -701,10 +675,8 @@ keras.layers.Cropping1D(cropping=(1, 1))
 __参数__
 
 - __cropping__: 整数或整数元组（长度为 2）。
-    在裁剪维度（第 1 个轴）的开始和结束位置
-    应该裁剪多少个单位。
-    如果只提供了一个整数，那么这两个位置将使用
-    相同的值。
+    在裁剪维度（第 1 个轴）的开始和结束位置应该裁剪多少个单位。
+    如果只提供了一个整数，那么这两个位置将使用相同的值。
 
 __输入尺寸__
 
@@ -747,7 +719,7 @@ __参数__
 如果你从未设置它，将使用 "channels_last"。
 
 
-__输出尺寸__
+__输入尺寸__
 
 - 如果 data_format='channels_last'，
 输出 4D 张量，尺寸为 `(batch, rows, cols, channels)`。
@@ -756,13 +728,6 @@ __输出尺寸__
 
 
 由于填充的原因， `rows` 和 `cols` 值可能已更改。
-
-__输入尺寸__
-
-- 如果 `data_format` 为 `"channels_last"`，
-输入 4D 张量，尺寸为 `(batch, cropped_rows, cropped_cols, channels)`。
-- 如果 `data_format` 为 `"channels_first"`，
-输入 4D 张量，尺寸为 `(batch, channels, cropped_rows, cropped_cols)`。
 
 __输出尺寸__
 
@@ -780,7 +745,7 @@ model = Sequential()
 model.add(Cropping2D(cropping=((2, 2), (4, 4)),
                      input_shape=(28, 28, 3)))
 # 现在 model.output_shape == (None, 24, 20, 3)
-model.add(Conv2D(64, (3, 3), padding='same'))
+model.add(Conv2D(64, (3, 3), padding='same')) 
 model.add(Cropping2D(cropping=((2, 2), (2, 2))))
 # 现在 model.output_shape == (None, 20, 16. 64)
 ```

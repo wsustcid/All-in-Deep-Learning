@@ -48,7 +48,7 @@ Keras也是深度学习研究人员的最爱，在上载到预印本服务器 [a
 ## Keras 支持多个后端引擎，不会将你锁定到一个生态系统中
 
 你的 Keras 模型可以基于不同的[深度学习后端](https://keras.io/zh/backend/)开发。重要的是，任何仅利用内置层构建的 Keras 模型，都可以在所有这些后端中移植：你可以用一种后端训练模型，再将它载入另一种后端中（例如为了发布的需要）。支持的后端有：
- 
+
  - 谷歌的 TensorFlow 后端
  - 微软的 CNTK 后端
  - Theano 后端
@@ -76,7 +76,7 @@ Keras也是深度学习研究人员的最爱，在上载到预印本服务器 [a
 
 Keras 的开发主要由谷歌支持，Keras API 以 `tf.keras` 的形式包装在 TensorFlow 中。此外，微软维护着 Keras 的 CNTK 后端。亚马逊 AWS 正在开发 MXNet 支持。其他提供支持的公司包括 NVIDIA、优步、苹果（通过 CoreML）等。
 
-<img src='/img/google-logo.png' style='width:200px; margin-right:15px;'/>
-<img src='/img/microsoft-logo.png' style='width:200px; margin-right:15px;'/>
-<img src='/img/nvidia-logo.png' style='width:200px; margin-right:15px;'/>
-<img src='/img/aws-logo.png' style='width:110px; margin-right:15px;'/>
+<img src='img/google-logo.png' style='width:200px; margin-right:15px;'/>
+<img src='img/microsoft-logo.png' style='width:200px; margin-right:15px;'/>
+<img src='img/nvidia-logo.png' style='width:200px; margin-right:15px;'/>
+<img src='img/aws-logo.png' style='width:110px; margin-right:15px;'/>

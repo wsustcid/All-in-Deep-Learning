@@ -1,4 +1,5 @@
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L200)</span>
+
 ### Add
 
 ```python
@@ -7,9 +8,7 @@ keras.layers.Add()
 
 计算输入张量列表的和。
 
-它接受一个张量的列表，
-所有的张量必须有相同的输入尺寸，
-然后返回一个张量（和输入张量尺寸相同）。
+它接受一个张量的列表，所有的张量必须有相同的输入尺寸，然后返回一个张量（和输入张量尺寸相同）。
 
 __例子__
 
@@ -39,9 +38,7 @@ keras.layers.Subtract()
 
 计算两个输入张量的差。
 
-它接受一个长度为 2 的张量列表，
-两个张量必须有相同的尺寸，然后返回一个值为 (inputs[0] - inputs[1]) 的张量，
-输出张量和输入张量尺寸相同。
+它接受一个长度为 2 的张量列表，两个张量必须有相同的尺寸，然后返回一个值为 (inputs[0] - inputs[1]) 的张量，输出张量和输入张量尺寸相同。
 
 __例子__
 
@@ -71,13 +68,12 @@ keras.layers.Multiply()
 
 计算输入张量列表的（逐元素间的）乘积。
 
-它接受一个张量的列表，
-所有的张量必须有相同的输入尺寸，
-然后返回一个张量（和输入张量尺寸相同）。
+它接受一个张量的列表，所有的张量必须有相同的输入尺寸，然后返回一个张量（和输入张量尺寸相同）。
 
 ----
 
 <span style="float:right;">[[source]]<span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L283)</span>
+
 ### Average
 
 ```python
@@ -86,9 +82,7 @@ keras.layers.Average()
 
 计算输入张量列表的平均值。
 
-它接受一个张量的列表，
-所有的张量必须有相同的输入尺寸，
-然后返回一个张量（和输入张量尺寸相同）。
+它接受一个张量的列表，所有的张量必须有相同的输入尺寸，然后返回一个张量（和输入张量尺寸相同）。
 
 ----
 
@@ -101,13 +95,12 @@ keras.layers.Maximum()
 
 计算输入张量列表的（逐元素间的）最大值。
 
-它接受一个张量的列表，
-所有的张量必须有相同的输入尺寸，
-然后返回一个张量（和输入张量尺寸相同）。
+它接受一个张量的列表，所有的张量必须有相同的输入尺寸，然后返回一个张量（和输入张量尺寸相同）。
 
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L320)</span>
+
 ### Concatenate
 
 ```python
@@ -116,9 +109,7 @@ keras.layers.Concatenate(axis=-1)
 
 连接一个输入张量的列表。
 
-它接受一个张量的列表，
-除了连接轴之外，其他的尺寸都必须相同，
-然后返回一个由所有输入张量连接起来的输出张量。
+它接受一个张量的列表，除了连接轴之外，其他的尺寸都必须相同，然后返回一个由所有输入张量连接起来的输出张量。
 
 __参数__
 
@@ -128,6 +119,7 @@ __参数__
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/merge.py#L416)</span>
+
 ### Dot
 
 ```python
@@ -136,9 +128,7 @@ keras.layers.Dot(axes, normalize=False)
 
 计算两个张量之间样本的点积。
 
-例如，如果作用于输入尺寸为 `(batch_size, n)` 的两个张量 `a` 和 `b`，
-那么输出结果就会是尺寸为 `(batch_size, 1)` 的一个张量。
-在这个张量中，每一个条目 `i` 是 `a[i]` 和 `b[i]` 之间的点积。
+例如，如果作用于输入尺寸为 `(batch_size, n)` 的两个张量 `a` 和 `b`，那么输出结果就会是尺寸为 `(batch_size, 1)` 的一个张量。在这个张量中，每一个条目 `i` 是 `a[i]` 和 `b[i]` 之间的点积。
 
 __参数__
 

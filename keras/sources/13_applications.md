@@ -83,7 +83,8 @@ from keras.models import Model
 import numpy as np
 
 base_model = VGG19(weights='imagenet')
-model = Model(inputs=base_model.input, outputs=base_model.get_layer('block4_pool').output)
+model = Model(inputs=base_model.input,
+              outputs=base_model.get_layer('block4_pool').output)
 
 img_path = 'elephant.jpg'
 img = image.load_img(img_path, target_size=(224, 224))
@@ -240,7 +241,6 @@ keras.applications.xception.Xception(include_top=True, weights='imagenet', input
 ### License
 
 预训练权值由我们自己训练而来，基于 MIT license 发布。
-
 
 -----
 

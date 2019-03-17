@@ -1,10 +1,6 @@
 # Keras: 基于 Python 的深度学习库
 
-<img src='https://s3.amazonaws.com/keras.io/img/keras-logo-2018-large-1200.png', style='max-width: 600px;'>
-
-
-
-## 你恰好发现了 Keras。
+![](https://s3.amazonaws.com/keras.io/img/keras-logo-2018-large-1200.png)
 
 Keras 是一个用 Python 编写的高级神经网络 API，它能够以 [TensorFlow](https://github.com/tensorflow/tensorflow), [CNTK](https://github.com/Microsoft/cntk), 或者 [Theano](https://github.com/Theano/Theano) 作为后端运行。Keras 的开发重点是支持快速的实验。*能够以最小的时延把你的想法转换为实验结果，是做好研究的关键。*
 
@@ -18,25 +14,10 @@ Keras 是一个用 Python 编写的高级神经网络 API，它能够以 [Tensor
 
 Keras 兼容的 Python 版本: __Python 2.7-3.6__。
 
-
 ------------------
 
 
-## 指导原则
-
-- __用户友好。__ Keras 是为人类而不是为机器设计的 API。它把用户体验放在首要和中心位置。Keras 遵循减少认知困难的最佳实践：它提供一致且简单的 API，将常见用例所需的用户操作数量降至最低，并且在用户错误时提供清晰和可操作的反馈。
-
-- __模块化。__ 模型被理解为由独立的、完全可配置的模块构成的序列或图。这些模块可以以尽可能少的限制组装在一起。特别是神经网络层、损失函数、优化器、初始化方法、激活函数、正则化方法，它们都是可以结合起来构建新模型的模块。
-
-- __易扩展性。__ 新的模块是很容易添加的（作为新的类和函数），现有的模块已经提供了充足的示例。由于能够轻松地创建可以提高表现力的新模块，Keras 更加适合高级研究。
-
-- __基于 Python 实现。__ Keras 没有特定格式的单独配置文件。模型定义在 Python 代码中，这些代码紧凑，易于调试，并且易于扩展。
-
-
-------------------
-
-
-## 快速开始：30 秒上手 Keras
+## 快速开始：
 
 Keras 的核心数据结构是 __model__，一种组织网络层的方式。最简单的模型是 [Sequential 顺序模型](/getting-started/sequential-model-guide)，它由多个网络层线性堆叠。对于更复杂的结构，你应该使用 [Keras 函数式 API](/getting-started/functional-api-guide)，它允许构建任意的神经网络图。
 
@@ -106,7 +87,6 @@ classes = model.predict(x_test, batch_size=128)
 
 在代码仓库的 [examples 目录](https://github.com/keras-team/keras/tree/master/examples)中，你会找到更多高级模型：基于记忆网络的问答系统、基于栈式 LSTM 的文本生成等等。
 
-
 ------------------
 
 
@@ -172,17 +152,5 @@ sudo python setup.py install
 - 或者加入 Keras 深度学习交流群，协助文档的翻译工作，群号为 951623081。
 
 你也可以在 [GitHub issues](https://github.com/keras-team/keras/issues) 中发布**漏洞报告和新功能请求**（仅限于此）。注意请先阅读[规范文档](https://github.com/keras-team/keras/blob/master/CONTRIBUTING.md)。
-
-
-------------------
-
-
-## 为什么取名为 Keras?
-
-Keras (κέρας) 在希腊语中意为 *号角* 。它来自古希腊和拉丁文学中的一个文学形象，首先出现于 *《奥德赛》* 中， 梦神 (_Oneiroi_, singular _Oneiros_) 从这两类人中分离出来：那些用虚幻的景象欺骗人类，通过象牙之门抵达地球之人，以及那些宣告未来即将到来，通过号角之门抵达之人。 它类似于文字寓意，κέρας (号角) / κραίνω (履行)，以及 ἐλέφας (象牙) / ἐλεφαίρομαι (欺骗)。
-
-Keras 最初是作为 ONEIROS 项目（开放式神经电子智能机器人操作系统）研究工作的一部分而开发的。
-
->_"Oneiroi 超出了我们的理解 - 谁能确定它们讲述了什么故事？并不是所有人都能找到。那里有两扇门，就是通往短暂的 Oneiroi 的通道；一个是用号角制造的，一个是用象牙制造的。穿过尖锐的象牙的 Oneiroi 是诡计多端的，他们带有一些不会实现的信息； 那些穿过抛光的喇叭出来的人背后具有真理，对于看到他们的人来说是完成的。"_ Homer, Odyssey 19. 562 ff (Shewring translation).
 
 ------------------

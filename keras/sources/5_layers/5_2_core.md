@@ -1,4 +1,5 @@
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L767)</span>
+
 ### Dense
 
 ```python
@@ -9,12 +10,9 @@ keras.layers.Dense(units, activation=None, use_bias=True, kernel_initializer='gl
 
 `Dense` 实现以下操作：
 `output = activation(dot(input, kernel) + bias)`
-其中 `activation` 是按逐个元素计算的激活函数，`kernel`
-是由网络层创建的权值矩阵，以及 `bias` 是其创建的偏置向量
-(只在 `use_bias` 为 `True` 时才有用)。
+其中 `activation` 是按逐个元素计算的激活函数，`kernel` 是由网络层创建的权值矩阵，以及 `bias` 是其创建的偏置向量 (只在 `use_bias` 为 `True` 时才有用)。
 
-- __注意__: 如果该层的输入的秩大于2，那么它首先被展平然后
-再计算与 `kernel` 的点乘。
+- __注意__: 如果该层的输入的秩大于2，那么它首先被展平然后再计算与 `kernel` 的点乘。
 
 __例__
 
@@ -33,10 +31,8 @@ model.add(Dense(32))
 __参数__
 
 - __units__: 正整数，输出空间维度。
-- __activation__: 激活函数
-(详见 [activations](../activations.md))。
-若不指定，则不使用激活函数
-(即，「线性」激活: `a(x) = x`)。
+- __activation__: 激活函数(详见 [activations](../activations.md))。
+  **若不指定，则不使用激活函数** (即，「线性」激活: `a(x) = x`)。
 - __use_bias__: 布尔值，该层是否使用偏置向量。
 - __kernel_initializer__: `kernel` 权值矩阵的初始化器
 (详见 [initializers](../initializers.md))。
@@ -46,9 +42,8 @@ __参数__
 (详见 [regularizer](../regularizers.md))。
 - __bias_regularizer__: 运用到偏置向的的正则化函数
 (详见 [regularizer](../regularizers.md))。
-- __activity_regularizer__: 运用到层的输出的正则化函数
-(它的 "activation")。
-(详见 [regularizer](../regularizers.md))。
+- __activity_regularizer__: 运用到层的输出的正则化函数(它的 "activation")。
+  (详见 [regularizer](../regularizers.md))。
 - __kernel_constraint__: 运用到 `kernel` 权值矩阵的约束函数
 (详见 [constraints](../constraints.md))。
 - __bias_constraint__: 运用到偏置向量的约束函数
@@ -69,6 +64,7 @@ nD 张量，尺寸: `(batch_size, ..., units)`。
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L276)</span>
+
 ### Activation
 
 ```python
@@ -86,9 +82,7 @@ __参数__
 __输入尺寸__
 
 任意尺寸。
-当使用此层作为模型中的第一层时，
-使用参数 `input_shape`
-（整数元组，不包括样本数的轴）。
+当使用此层作为模型中的第一层时，使用参数 `input_shape`（整数元组，不包括样本数的轴）。
 
 
 __输出尺寸__
@@ -98,6 +92,7 @@ __输出尺寸__
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L80)</span>
+
 ### Dropout
 
 ```python
@@ -106,19 +101,14 @@ keras.layers.Dropout(rate, noise_shape=None, seed=None)
 
 将 Dropout 应用于输入。
 
-Dropout 包括在训练中每次更新时，
-将输入单元的按比率随机设置为 0，
-这有助于防止过拟合。
+Dropout 包括在训练中每次更新时，将输入单元的按比率随机设置为 0，这有助于防止过拟合。
 
 __参数__
 
 - __rate__: 在 0 和 1 之间浮动。需要丢弃的输入比例。
 - __noise_shape__: 1D 整数张量，
-表示将与输入相乘的二进制 dropout 掩层的形状。
-例如，如果你的输入尺寸为
-`(batch_size, timesteps, features)`，然后
-你希望 dropout 掩层在所有时间步都是一样的，
-你可以使用 `noise_shape=(batch_size, 1, features)`。
+  表示将与输入相乘的二进制 dropout 掩层的形状。
+  例如，如果你的输入尺寸为`(batch_size, timesteps, features)`，然后你希望 dropout 掩层在所有时间步都是一样的，你可以使用 `noise_shape=(batch_size, 1, features)`。
 - __seed__: 一个作为随机种子的 Python 整数。
 
 __参考文献__
@@ -164,30 +154,25 @@ keras.engine.input_layer.Input()
 
 `Input()` 用于实例化 Keras 张量。
 
-Keras 张量是底层后端(Theano, TensorFlow 或 CNTK)
-的张量对象，我们增加了一些特性，使得能够通过了解模型的输入
-和输出来构建 Keras 模型。
+Keras 张量是底层后端(Theano, TensorFlow 或 CNTK) 的张量对象，我们增加了一些特性，使得能够通过了解模型的输入和输出来构建 Keras 模型。
 
-例如，如果 a, b 和 c 都是 Keras 张量，
-那么以下操作是可行的：
+例如，如果 a, b 和 c 都是 Keras 张量，那么以下操作是可行的：
 `model = Model(input=[a, b], output=c)`
 
 添加的 Keras 属性是：
 - __`_keras_shape`__: 通过 Keras端的尺寸推理
-进行传播的整数尺寸元组。
+  进行传播的整数尺寸元组。
 - __`_keras_history`__: 应用于张量的最后一层。
-整个网络层计算图可以递归地从该层中检索。
+  整个网络层计算图可以递归地从该层中检索。
 
 __参数__
 
 - __shape__: 一个尺寸元组（整数），不包含批量大小。
 例如，`shape=(32,)` 表明期望的输入是按批次的 32 维向量。
 - __batch_shape__: 一个尺寸元组（整数），包含批量大小。
-例如，`batch_shape=(10, 32)` 表明期望的输入是 10 个 32 维向量。
-`batch_shape=(None, 32)` 表明任意批次大小的 32 维向量。
+  例如，`batch_shape=(10, 32)` 表明期望的输入是 10 个 32 维向量。`batch_shape=(None, 32)` 表明任意批次大小的 32 维向量。
 - __name__: 一个可选的层的名称的字符串。
-在一个模型中应该是唯一的（不可以重用一个名字两次）。
-如未提供，将自动生成。
+  在一个模型中应该是唯一的（不可以重用一个名字两次）。如未提供，将自动生成。
 - __dtype__: 输入所期望的数据类型，字符串表示
 (`float32`, `float64`, `int32`...)
 - __sparse__: 一个布尔值，指明需要创建的占位符是否是稀疏的。
@@ -211,6 +196,7 @@ model = Model(x, y)
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L310)</span>
+
 ### Reshape
 
 ```python
@@ -222,14 +208,12 @@ keras.layers.Reshape(target_shape)
 __参数__
 
 - __target_shape__: 目标尺寸。整数元组。
-不包含表示批量的轴。
+**不包含表示批量的轴。**
 
 __输入尺寸__
 
 任意，尽管输入尺寸中的所有维度必须是固定的。
-当使用此层作为模型中的第一层时，
-使用参数 `input_shape`
-（整数元组，不包括样本数的轴）。
+当使用此层作为模型中的第一层时，使用参数 `input_shape`（整数元组，不包括样本数的轴）。
 
 __输出尺寸__
 
@@ -263,7 +247,7 @@ model.add(Reshape((-1, 2, 2)))
 keras.layers.Permute(dims)
 ```
 
-根据给定的模式置换输入的维度。
+根据给定的模式**置换输入的维度**。
 
 在某些场景下很有用，例如将 RNN 和 CNN 连接在一起。
 
@@ -285,9 +269,7 @@ __参数__
 
 __输入尺寸__
 
-任意。当使用此层作为模型中的第一层时，
-使用参数 `input_shape`
-（整数元组，不包括样本数的轴）。
+任意。当使用此层作为模型中的第一层时，使用参数 `input_shape`（整数元组，不包括样本数的轴）。
 
 __输出尺寸__
 
@@ -296,6 +278,7 @@ __输出尺寸__
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L523)</span>
+
 ### RepeatVector
 
 ```python
@@ -376,28 +359,26 @@ __参数__
     只在使用 Theano 时有意义。
     可以是元组或者函数。
     如果是元组，它只指定第一个维度；
-        样本维度假设与输入相同：
-        `output_shape = (input_shape[0], ) + output_shape`
-        或者，输入是 `None` 且样本维度也是 `None`：
-        `output_shape = (None, ) + output_shape`
-        如果是函数，它指定整个尺寸为输入尺寸的一个函数：
-        `output_shape = f(input_shape)`
+    ​    样本维度假设与输入相同：
+    ​    `output_shape = (input_shape[0], ) + output_shape`
+    ​    或者，输入是 `None` 且样本维度也是 `None`：
+    ​    `output_shape = (None, ) + output_shape`
+    ​    如果是函数，它指定整个尺寸为输入尺寸的一个函数：
+    ​    `output_shape = f(input_shape)`
 - __arguments__: 可选的需要传递给函数的关键字参数。
 
 __输入尺寸__
 
-任意。当使用此层作为模型中的第一层时，
-使用参数 `input_shape`
-（整数元组，不包括样本数的轴）。
+任意。当使用此层作为模型中的第一层时，使用参数 `input_shape`（整数元组，不包括样本数的轴）。
 
 __输出尺寸__
 
-由 `output_shape` 参数指定
-(或者在使用 TensorFlow 时，自动推理得到)。
+由 `output_shape` 参数指定 (或者在使用 TensorFlow 时，自动推理得到)。
 
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L911)</span>
+
 ### ActivityRegularization
 
 ```python
@@ -413,9 +394,9 @@ __参数__
 
 __输入尺寸__
 
-任意。当使用此层作为模型中的第一层时，
-使用参数 `input_shape`
-（整数元组，不包括样本数的轴）。
+任意。
+
+当使用此层作为模型中的第一层时，使用参数 `input_shape`（整数元组，不包括样本数的轴）。
 
 __输出尺寸__
 
@@ -424,6 +405,7 @@ __输出尺寸__
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L28)</span>
+
 ### Masking
 
 ```python
@@ -432,20 +414,14 @@ keras.layers.Masking(mask_value=0.0)
 
 使用覆盖值覆盖序列，以跳过时间步。
 
-对于输入张量的每一个时间步（张量的第一个维度），
-如果所有时间步中输入张量的值与 `mask_value` 相等，
-那么这个时间步将在所有下游层被覆盖 (跳过)
-（只要它们支持覆盖）。
-
-如果任何下游层不支持覆盖但仍然收到此类输入覆盖信息，会引发异常。
+对于输入张量的每一个时间步（张量的第一个维度），如果所有时间步中输入张量的值与 `mask_value` 相等，
+那么这个时间步将在所有下游层被覆盖 (跳过)（只要它们支持覆盖）。如果任何下游层不支持覆盖但仍然收到此类输入覆盖信息，会引发异常。
 
 __例__
 
 
-考虑将要喂入一个 LSTM 层的 Numpy 矩阵 `x`，
-尺寸为 `(samples, timesteps, features)`。
-你想要覆盖时间步 #3 和 #5，因为你缺乏这几个
-时间步的数据。你可以：
+考虑将要喂入一个 LSTM 层的 Numpy 矩阵 `x`，尺寸为 `(samples, timesteps, features)`。
+你想要覆盖时间步 #3 和 #5，因为你缺乏这几个时间步的数据。你可以：
 
 - 设置 `x[:, 3, :] = 0.` 以及 `x[:, 5, :] = 0.`
 - 在 LSTM 层之前，插入一个 `mask_value=0` 的 `Masking` 层：

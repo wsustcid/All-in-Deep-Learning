@@ -1,6 +1,6 @@
 # Sequential 模型 API
 
-在阅读这片文档前，请先阅读 [Keras Sequential 模型指引](/getting-started/sequential-model-guide)。
+在阅读这片文档前，请先阅读 [Keras Sequential 模型指引](../3_getting-started/3_1_sequential-model-guide)。
 
 ----
 
@@ -253,7 +253,35 @@ __异常__
 
 - __ValueError__: 如果生成器生成的数据格式不正确。
 
-__例子__
+
+
+#### 数据生成器
+
+##### Example 1:
+
+Here is an example of data generator:
+
+Assume `features` is an array of data with shape (100,64,64,3) and `labels` is an array of data with shape (100,1). We use data from `features` and `labels`to train our model.
+
+```python
+def generator(features, labels, batch_size):
+ # Create empty arrays to contain batch of features and labels#
+ batch_features = np.zeros((batch_size, 64, 64, 3))
+ batch_labels = np.zeros((batch_size,1))
+ while True:
+   for i in range(batch_size):
+     # choose random index in features
+     index= random.choice(len(features),1)
+     batch_features[i] = some_processing(features[index])
+     batch_labels[i] = labels[index]
+   yield batch_features, batch_labels
+```
+
+With the generator above, if we define `batch_size = 10` , that means it will randomly taking out 10 samples from `features` and `labels` to feed into each epoch until an epoch hits 50 sample limit. Then fit_generator() destroys the used data and move on repeating the same process in new epoch.
+
+One great advantage about **fit_generator()** besides saving memory is user **can integrate random augmentation inside the generator**, so it will always provide model with new data to train on the fly.
+
+##### Example 2:
 
 
 ```python
@@ -269,7 +297,54 @@ model.fit_generator(generate_arrays_from_file('/my_file.txt'),
                     steps_per_epoch=10000, epochs=10)
 ```
 
-----
+
+
+##### 解析
+
+在python中，当你定义一个函数，使用了yield关键字时，这个函数就是一个__生成器__ (也就是说，只要有yield这个词出现，你在用def定义函数的时候，系统默认这就不是一个函数啦，而是一个生成器）。如果需要生成器返回（下一个）值，需要调用.next()函数。其实当系统判断def是生成器时，就会自动支持.next()函数，例如：
+
+
+```python
+def fibonacci(max_n):
+    a, b = 1, 1
+    while a <= max_n:
+        
+        yield a
+        a, b = b, a+b 
+        
+if __name__ == '__main__':
+    
+    n = []
+    for i in fibonacci(15):
+        n.append(i)
+        
+    print n 
+        
+    m = fibonacci(13)
+    print m
+    
+    print m.next()
+    print m.next()
+    print m.next()
+    
+## output:
+[1, 1, 2, 3, 5, 8, 13]
+<generator object fibonacci at 0x7f751b544820>
+1
+1
+2
+```
+
+
+
+
+1. 每个生成器只能使用一次。比如上个例子中的m生成器，一旦打印完m的7个值，就没有办法再打印m的值了，因为已经吐完了。生成器每次运行之后都会在运行到yield的位置时候，保存暂时的状态，跳出生成器函数，在下次执行生成器函数的时候会从上次截断的位置继续开始执行循环。
+
+2. yield一般都在def生成器定义中搭配一些循环语句使用，比如for或者while，以防止运行到生成器末尾跳出生成器函数，就不能再yield了。有时候，为了保证生成器函数永远也不会执行到函数末尾，会用while True: 语句，这样就会保证只要使用next()，这个生成器就会生成一个值，是处理无穷序列的常见方法。
+
+拿第一个例子为例， 每次继续开始执行上次没处理完成的位置，但后面的每次循环都只在while True这个循环体内部运行，之前的非循环体batch_feature...  batch_label ...并没有执行，因为它们只在第一次进入生成其函数的时候才有效地运行过一次。
+
+
 
 ### evaluate_generator
 

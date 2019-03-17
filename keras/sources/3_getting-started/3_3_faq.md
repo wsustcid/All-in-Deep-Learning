@@ -134,6 +134,7 @@ with tf.device_scope('/cpu:0'):
 
 ---
 <span id="how-can-i-save-a-keras-model"></span>
+
 ### 如何保存 Keras 模型？
 
 #### 保存/加载整个模型（结构 + 权重 + 优化器状态）
@@ -313,16 +314,18 @@ layer_output = get_3rd_layer_output([x, 1])[0]
 
 ---
 <span id="how-can-i-use-keras-with-datasets-that-dont-fit-in-memory"></span>
+
 ### 如何用 Keras 处理超过内存的数据集？
 
 你可以使用 `model.train_on_batch(x，y)` 和 `model.test_on_batch(x，y)` 进行批量训练与测试。请参阅 [模型文档](/models/sequential)。
 
 或者，你可以编写一个生成批处理训练数据的生成器，然后使用 `model.fit_generator(data_generator，steps_per_epoch，epochs)` 方法。
 
-你可以在 [CIFAR10 example](https://github.com/keras-team/keras/blob/master/examples/cifar10_cnn.py) 中找到实践代码。
+你可以在 [CIFAR10 example](https://github.com/keras-team/keras/blob/master/examples/cifar10_cnn.py) 中找到实践代码。`./examples/cifar10_cnn.md`
 
 ---
 <span id="how-can-i-interrupt-training-when-the-validation-loss-isnt-decreasing-anymore"></span>
+
 ### 在验证集的误差不再下降时，如何中断训练？
 
 你可以使用 `EarlyStopping` 回调：
@@ -337,6 +340,7 @@ model.fit(x, y, validation_split=0.2, callbacks=[early_stopping])
 
 ---
 <span id="how-is-the-validation-split-computed"></span>
+
 ### 验证集划分是如何计算的？
 
 如果您将 `model.fit` 中的 `validation_split` 参数设置为 0.1，那么使用的验证数据将是最后 10％ 的数据。如果设置为 0.25，就是最后 25% 的数据。注意，在提取分割验证集之前，数据不会被混洗，因此验证集仅仅是传递的输入中最后一个 x％ 的样本。 
@@ -345,6 +349,7 @@ model.fit(x, y, validation_split=0.2, callbacks=[early_stopping])
 
 ---
 <span id="is-the-data-shuffled-during-training"></span>
+
 ### 在训练过程中数据是否会混洗？
 
 是的，如果 `model.fit`中的 `shuffle`参数设置为 True（默认值），则训练数据将在每个 epoch 混洗。
@@ -354,6 +359,7 @@ model.fit(x, y, validation_split=0.2, callbacks=[early_stopping])
 ---
 
 <span id="how-can-i-record-the-training-validation-loss-accuracy-at-each-epoch"></span>
+
 ### 如何在每个 epoch 后记录训练集和验证集的误差和准确率？
 
 `model.fit` 方法返回一个 `History` 回调，它具有包含连续误差的列表和其他度量的 `history` 属性。
@@ -365,6 +371,7 @@ print(hist.history)
 
 ---
 <span id="how-can-i-freeze-keras-layers"></span>
+
 ### 如何「冻结」网络层？
 
 「冻结」一个层意味着将其排除在训练之外，即其权重将永远不会更新。这在微调模型或使用固定的词向量进行文本输入中很有用。
@@ -448,9 +455,10 @@ model.layers[0].reset_states()
 
 ---
 <span id="how-can-i-remove-a-layer-from-a-sequential-model"></span>
+
 ### 如何从 Sequential 模型中移除一个层？
 
-你可以通过调用 `.pop()` 来删除 `Sequential` 模型中最后添加的层：
+你可以通过调用 `.pop()` 来**删除 `Sequential` 模型中最后添加的层**：
 
 ```python
 model = Sequential()
@@ -502,7 +510,7 @@ model = VGG16(weights='imagenet', include_top=True)
 
 有关一些简单的用法示例，请参阅 [Applications 模块的文档](/applications)。
 
-有关如何使用此类预训练的模型进行特征提取或微调的详细示例，请参阅 [此博客文章](http://blog.keras.io/building-powerful-image-classification-models-using-very-little-data.html)。
+有关**如何使用此类预训练的模型进行特征提取或微调的详细示例**，请参阅 [此博客文章](http://blog.keras.io/building-powerful-image-classification-models-using-very-little-data.html)。
 
 VGG16 模型也是以下几个 Keras 示例脚本的基础：
 
