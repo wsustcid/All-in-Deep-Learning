@@ -16,6 +16,10 @@ CUDA：是Nvidia推出的只能用于自家GPU的并行计算框架。只有安�
 
    详见:https://blog.csdn.net/MahoneSun/article/details/80809042
 
+   - Latest TensorFlow supports cuda 8-10. cudnn 6-7.
+   - Each TensorFlow binary has to work with the version of cuda and cudnn it was built with. If they don't match, you have to change either the TensorFlow binary or the Nvidia softwares.
+   - Official `tensorflow-gpu` binaries (the one downloaded by pip or conda) are built with **cuda 9.0, cudnn 7 since TF 1.5**, and **cuda 10.0, cudnn 7 since TF 1.13.** These are written in the [release notes](https://github.com/tensorflow/tensorflow/releases). You have to use the matching version of cuda if using the official binaries.
+
 2. 本次安装：
 
    ```
@@ -247,6 +251,7 @@ Package dependencies are automatically installed. These are listed in the [`setu
 
 ```bsh
 pip install tensorflow-gpu==1.9.0
+pip install tensorflow-gpu==1.12.0
 ```
 
 Verify the install:
