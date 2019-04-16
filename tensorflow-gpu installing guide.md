@@ -445,6 +445,24 @@ See [Running the Notebook](https://jupyter.readthedocs.io/en/latest/running.html
 
 
 
+#### 错误修复
+
+出现 `UnicodeDecodeError: 'ascii' codec can't decode byte 0xe5 in position 4: ordinal not in range(128)` 错误，是由于python2对于中文安装环境的bug.
+
+解决方案：
+
+```python
+# default setting:
+echo $LANGUAGE  # zh_CN:zh
+export LANGUAGE=en_US
+```
+
+
+
+In case any Chinese users would like any actually useful help with this issue, while you should upgrade to using Python 3 versions of Jupyter if possible, if you cannot upgrade for whatever reason: try setting the environment variable `LANGUAGE=en_US` so that Jupyter doesn't try to use its Chinese translation, which clearly doesn't work well on Python 2. Or if that doesn't work, try one of `LC_ALL`, `LC_MESSAGES`, or `LANG`as described here: <https://docs.python.org/2/library/gettext.html#gettext.bindtextdomain>
+
+
+
 Jupyter notebook添加python2 python3内核
 
 1. ipython kernel install --name python2  
