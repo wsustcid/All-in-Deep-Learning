@@ -304,94 +304,7 @@ pip install keras
 
 *The pip install command also supports a --pre flag that will enable installing pre-releases and development releases.*
 
-# GPU support
 
-TensorFlow GPU support requires an assortment of drivers and libraries. To simplify installation and avoid library conflicts, we recommend using a [TensorFlow Docker image with GPU support](https://www.tensorflow.org/install/docker) (Linux only). This setup only requires the [NVIDIA® GPU drivers](https://www.nvidia.com/drivers).
-
-## Overview: Hardware  and Software requirements 
-
-The following GPU-enabled devices are supported:
-
-- NVIDIA® GPU card with CUDA® Compute Capability 3.5 or higher. See the list of[CUDA-enabled GPU cards](https://developer.nvidia.com/cuda-gpus).
-
-  | GPU                                                          | Compute Capability |
-  | ------------------------------------------------------------ | ------------------ |
-  | [NVIDIA TITAN V](https://www.nvidia.com/en-us/titan/titan-v) | 7.0                |
-  | [NVIDIA TITAN Xp](http://www.geforce.com/hardware/10series/titan-xp) | 6.1                |
-  | [NVIDIA TITAN X](http://www.geforce.com/hardware/10series/titan-x-pascal) | 6.1                |
-  | [GeForce GTX 1080 Ti](http://www.geforce.com/hardware/10series/geforce-gtx-1080-ti) | 6.1                |
-  | [GeForce GTX 1080](http://www.geforce.com/hardware/10series/geforce-gtx-1080) | 6.1                |
-
-
-
-The following NVIDIA® software must be installed on your system:
-
-- [NVIDIA® GPU drivers](https://www.nvidia.com/drivers) —**CUDA 9.0 requires 384.x or higher**.
-
-- [CUDA® Toolkit](https://developer.nvidia.com/cuda-zone) —**TensorFlow supports CUDA 9.0.**
-
-  CUDA® is a parallel computing platform and programming model developed by NVIDIA for general computing on graphical processing units (GPUs). With CUDA, developers are able to dramatically speed up computing applications by harnessing the power of GPUs.
-
-  In GPU-accelerated applications, the sequential part of the workload runs on the CPU – which is optimized for single-threaded performance – while the compute intensive portion of the application runs on thousands of GPU cores in parallel. When using CUDA, developers program in popular languages such as C, C++, Fortran, Python and MATLAB and express parallelism through extensions in the form of a few basic keywords.
-
-  The [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) from NVIDIA provides everything you need to develop GPU-accelerated applications. The CUDA Toolkit includes GPU-accelerated libraries, a compiler, development tools and the CUDA runtime.
-
-  ```
-  Run `sudo sh cuda_9.0.176_384.81_linux.run`
-  ```
-
-  For further information, see the [Installation Guide for Linux](https://developer.download.nvidia.com/compute/cuda/10.0/Prod/docs/sidebar/CUDA_Installation_Guide_Linux.pdf) and the [CUDA Quick Start Guide](https://developer.download.nvidia.com/compute/cuda/10.0/Prod/docs/sidebar/CUDA_Quick_Start_Guide.pdf).
-
-- [CUPTI](http://docs.nvidia.com/cuda/cupti/) ships with the CUDA Toolkit.
-
-  The *CUDA Profiling Tools Interface* (CUPTI) enables the creation of profiling and tracing tools that target CUDA applications. CUPTI provides four APIs: *the Activity API*, the *Callback API*, the *Event API*, and the *Metric API*. Using these APIs, you can develop profiling tools that give insight into the CPU and GPU behavior of CUDA applications. CUPTI is delivered as a dynamic library on all platforms supported by CUDA.
-
-- [cuDNN SDK](https://developer.nvidia.com/cudnn) **(>= 7.2)**
-
-  The NVIDIA CUDA® Deep Neural Network library (cuDNN) is a GPU-accelerated library of primitives for [deep neural networks](https://developer.nvidia.com/deep-learning). cuDNN provides highly tuned implementations for standard routines such as forward and backward convolution, pooling, normalization, and activation layers. cuDNN is part of the [NVIDIA Deep Learning SDK](https://developer.nvidia.com/deep-learning-sdk).
-
-- *(Optional)* [NCCL 2.2](https://developer.nvidia.com/nccl) for multiple GPU support.
-
-- *(Optional)* [TensorRT 4.0](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html) to improve latency and throughput for inference on some models.
-
-
-
-## Linux setup
-
-The `apt` instructions below are the easiest way to install the required NVIDIA software on Ubuntu. However, if [building TensorFlow from source](https://www.tensorflow.org/install/source), manually install the software requirements listed above, and consider using a `-devel` [TensorFlow Docker image](https://www.tensorflow.org/install/docker) as a base.
-
-Install [CUPTI](http://docs.nvidia.com/cuda/cupti/) which ships with the CUDA® Toolkit. Append its installation directory to the `$LD_LIBRARY_PATH` environmental variable:
-
-```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
-```
-
-### Install CUDA with apt
-
-For Ubuntu 16.04—and possibly other Debian-based Linux distros—add the NVIDIA package repository and use `apt` to install CUDA.
-
-**Caution:** `apt` installs the NVIDIA libraries and headers to locations that make it difficult to configure and debug build issues.
-
-```bsh
-# Add NVIDIA package repository
-sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
-
-wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_9.1.85-1_amd64.deb
-
-sudo apt install ./cuda-repo-ubuntu1604_9.1.85-1_amd64.deb
-
-wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/nvidia-machine-learning-repo-ubuntu1604_1.0.0-1_amd64.deb
-
-sudo apt install ./nvidia-machine-learning-repo-ubuntu1604_1.0.0-1_amd64.deb
-sudo apt update
-
-# Install CUDA and tools. Include optional NCCL 2.x
-sudo apt install cuda9.0 cuda-cublas-9-0 cuda-cufft-9-0 cuda-curand-9-0 cuda-cusolver-9-0 cuda-cusparse-9-0 libcudnn7=7.2.1.38-1+cuda9.0 libnccl2=2.2.13-1+cuda9.0 cuda-command-line-tools-9-0
-
-# Optional: Install the TensorRT runtime (must be after CUDA install)
-sudo apt update
-sudo apt install libnvinfer4=4.1.2-1+cuda9.0
-```
 
 ## 1.7 Jupyter notebook
 
@@ -467,3 +380,14 @@ Jupyter notebook添加python2 python3内核
 
 1. ipython kernel install --name python2  
 2. ipython kernel install --name python3  
+
+
+
+
+
+## 1.8 
+
+```bash
+pip install -U scikit-learn
+```
+
