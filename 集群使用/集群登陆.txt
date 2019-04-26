@@ -1,9 +1,9 @@
-¿ÎÌâ×é:http://wmg.ustc.edu.cn/wiki/index.php/%E9%9B%86%E7%BE%A4:%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8
-ÓòÃû£º wmc.i-yu.me port:22
-ÓÃ»§Ãû£ºlili
-ÃÜÂë£ºshaaiws1314
-Ñ§Ôº£ºhttp://mccipc.ustc.edu.cn/mediawiki/index.php/Gpu-cluster-manual
-ÓòÃû£º202.38.69.241 port:39099
+è¯¾é¢˜ç»„:http://wmg.ustc.edu.cn/wiki/index.php/%E9%9B%86%E7%BE%A4:%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8
+åŸŸåï¼š wmc.i-yu.me port:22
+ç”¨æˆ·åï¼šlili
+å¯†ç ï¼šxxxx
+å­¦é™¢ï¼šhttp://mccipc.ustc.edu.cn/mediawiki/index.php/Gpu-cluster-manual
+åŸŸåï¼š202.38.69.241 port:39099
 SSH
-ÓÃ»§Ãû£ºlili2
-ÃÜÂë£ºa123456
+ç”¨æˆ·åï¼šlili2
+å¯†ç ï¼šxxxx
