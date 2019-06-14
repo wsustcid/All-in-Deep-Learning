@@ -1,10 +1,48 @@
-## 回调函数使用
+## 概述
 
-回调函数是一个函数的合集，会在训练的阶段中所使用。你可以使用回调函数来查看训练模型的内在状态和统计。你可以传递一个列表的回调函数（作为 `callbacks` 关键字参数）到 `Sequential` 或 `Model` 类型的 `.fit()` 方法。在训练时，相应的回调函数的方法就会被在各自的阶段被调用。
+回调函数是一个函数的合集，会在训练的阶段中所使用。你可以使用回调函数来查看训练模型的内在状态和统计。
 
----
+**源码：**
 
-<span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L148)</span>
+- [[source]](https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L148)
+
+**使用方法：**
+
+你可以传递一个列表的回调函数（作为 `callbacks` 关键字的参数）到 `Sequential` 或 `Model` 类型的 `.fit()` 方法。在训练时，相应的回调函数的方法就会被在各自的阶段被调用。
+
+```python
+#First, callbacks must be instantiated.
+cb = Callback(...)
+
+# Then, one or more callbacks that you intend to use must be added to a Python list.
+cb_list = [cb, ...]
+
+# Finally, the list of callbacks is provided to the callback argument when fitting the model.
+model.fit(..., callbacks=cb_list)
+```
+
+**使用回调函数监控模型性能：**
+
+在每一轮训练的最后，都会计算我们选择优化的损失函数的值，我们可以通过多种方式监控此值：
+
+- 在回调函数中通过监控`“loss”`, 我们可以得到训练集上的损失函数值
+
+- 如果我们使用了验证集，可以通过监控`“val_loss”` 的到验证集上的损失值
+
+- 我们同样可以监控其他值，如评价指标，但要在 model.compile() 函数中事先指定
+
+  ```python
+  model.compile(..., metrics=['acc'])
+  ```
+
+  - 一旦我们指定了此评价指标，此指标就可以在训练过程中被监控
+  - 同样，在回调函数中指定 `“acc”` 或`“mse”`可以监控训练集的精度或最小均方误差
+  - 指定 `“val_acc”` 或`“val_mse”`可以监控验证集的精度或最小均方误差
+
+
+
+## 回调函数的种类
+
 ### Callback
 
 ```python
@@ -98,38 +136,34 @@ keras.callbacks.History()
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L360)</span>
-### ModelCheckpoint
 
-```python
-keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto', period=1)
-```
 
-在每个训练期之后保存模型。
 
-`filepath` 可以包括命名格式选项，可以由 `epoch` 的值和 `logs` 的键（由 `on_epoch_end` 参数传递）来填充。
+### EarlyStopping()
 
-例如：如果 `filepath` 是 `weights.{epoch:02d}-{val_loss:.2f}.hdf5`，
-那么模型被保存的的文件名就会有训练轮数和验证损失。
+This callback allows you to specify the performance measure to monitor, the trigger, and once triggered, it will stop the training process.
 
-__参数__
+**Requirements：**
 
-- __filepath__: 字符串，保存模型的路径。
-- __monitor__: 被监测的数据。
-- __verbose__: 详细信息模式，0 或者 1 。
-- __save_best_only__: 如果 `save_best_only=True`，
-被监测数据的最佳模型就不会被覆盖。
-- __mode__: {auto, min, max} 的其中之一。
-如果 `save_best_only=True`，那么是否覆盖保存文件的决定就取决于被监测数据的最大或者最小值。
-对于 `val_acc`，模式就会是 `max`，而对于 `val_loss`，模式就需要是 `min`，等等。
-在 `auto` 模式中，方向会自动从被监测的数据的名字中判断出来。
-- __save_weights_only__: 如果 True，那么只有模型的权重会被保存 (`model.save_weights(filepath)`)，
-否则的话，整个模型会被保存 (`model.save(filepath)`)。
-- __period__: 每个检查点之间的间隔（训练轮数）。
+- 早停法要求在训练时提供验证集，有两种提供验证集的方法：
 
-----
+  - 将训练数据手动分为训练集和验证集后（比如在数据集读取阶段分）分别提供给 model.fit() 函数
 
-<span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L460)</span>
-### EarlyStopping
+    ```python
+    model.fit(train_X, train_y, validation_data=(val_x, val_y))
+    ```
+
+  - 直接提供完整训练数据集，并指定`validation_split`参数一个0-1之间的值，依靠model.fit()函数自动划分
+
+    ```python
+    model.fit(train_X, train_y, validation_split=0.3)
+    ```
+
+  - 通过以上两种方式，模型将在每个epoch利用训练集进行训练(loss)，依靠验证集进行评估（`metrics`）
+
+**使用：**
+
+The *EarlyStopping* callback is configured when instantiated via arguments.
 
 ```python
 keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False)
@@ -139,23 +173,133 @@ keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbo
 
 __参数__
 
-- __monitor__: 被监测的数据。
+- __monitor__: 指定被监测性能指标来停止训练
+  - 要监测验证集上的指标，一般都要加“val_”前缀，如监测验证集上的损失时，使用'val_loss'
+- __mode__: {auto, min, max} 其中之一
+  - 在 `min` 模式中，当被监测的数据停止下降，训练就会停止；
+  - 在 `max` 模式中，当被监测的数据停止上升，训练就会停止；
+  - 在 `auto` 模式中，方向会自动从被监测的数据的名字中判断出来
+
+*以上两个参数是使用早停法的最简实现，当选择监控的性能参数首次停止提升时，训练将会停止。*
+
+- __verbose__: 详细信息模式
+  - 当需要输出训练过程在哪一个epoch停止时，将此参数设置为1
+
+***但是，性能参数首次停止提升便停止训练并不是最优做法，因为参数可能陷入局部最优。为此，我们可以给早停法的触发通过patience参数设定一个延时：***
+
+- __patience__: 指定没有进步的训练轮数，在这之后训练才被停止
+
+*我们亦可指定多大的提升才算做提升（默认大于0即算）*
+
 - __min_delta__: 在被监测的数据中被认为是提升的最小变化，
-例如，小于 min_delta 的绝对变化会被认为没有提升。
-- __patience__: 没有进步的训练轮数，在这之后训练就会被停止。
-- __verbose__: 详细信息模式。
-- __mode__: {auto, min, max} 其中之一。 在 `min` 模式中，
-当被监测的数据停止下降，训练就会停止；在 `max`
-模式中，当被监测的数据停止上升，训练就会停止；在 `auto`
-模式中，方向会自动从被监测的数据的名字中判断出来。
-- __baseline__: 要监控的数量的基准值。
-如果模型没有显示基准的改善，训练将停止。
-- __restore_best_weights__: 是否从具有监测数量的最佳值的时期恢复模型权重。
-如果为 False，则使用在训练的最后一步获得的模型权重。
+  - 例如，小于 min_delta 的绝对变化会被认为没有提升。
+
+*if you have familiarity with the training of the model (e.g. learning curves) and know that once a validation loss of a given value is achieved that there is no point in continuing training. This can be specified by setting the “*baseline*” argument.*
+
+- __baseline__: 要监控的数量的基准值
+  - 仅当性能指标优于基准值时，训练停止
+
+
+
+- __restore_best_weights__: 是否从具有监测数量的最佳值的时期恢复模型权重
+- 如果为 False，则使用在训练的最后一步获得的模型权重。
 
 ----
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L574)</span>
+
+### ModelCheckpoint()
+
+The *EarlyStopping* callback will stop training once triggered, but the model at the end of training may not be the model with best performance on the validation dataset.
+
+An additional callback is required that will save the best model observed during training for later use. This is the *ModelCheckpoint* callback.
+
+**Requirements:**
+
+Saving and loading models requires that HDF5 support has been installed on your workstation. For example, using the *pip* Python installer, this can be achieved as follows:
+
+```python
+sudo pip install h5py
+```
+
+You can learn more from the [h5py Installation documentation](http://docs.h5py.org/en/latest/build.html).
+
+
+
+**Usage:**
+
+```python
+keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto', period=1)
+```
+
+在每个训练期之后保存模型。
+
+__参数__
+
+- __filepath__: 字符串，保存模型的路径:
+  - 若使用固定的文件名如 `save_dir + "best_model.h5"` ，则 ==实验==
+  - `filepath` 可以包括命名格式选项，可以由 `epoch` 的值和 `logs` 的键（由 `on_epoch_end` 参数传递）来填充。例如：如果 `filepath` 是 `weights.{epoch:02d}-{val_loss:.2f}.hdf5`，那么模型被保存的的文件名就会有训练轮数和验证集损失。
+- __monitor__: 被监测的数据。默认是验证集的损失函数值
+- __verbose__: 是否启用详细信息模式，0 或者 1 。
+  - 为1时会输出保存信息：Epoch 00001: saving model to ..
+- __save_best_only__: 
+- Finally, we are interested in only the very best model observed during training, rather than the best compared to the previous epoch, which might not be the best overall if training is noisy. This can be achieved by setting the “*save_best_only*” argument to *True*.
+  - 默认为False，==实验==
+  - 如果 `save_best_only=True`，仅当此次回调时，监控指标比上一次好时才保存模型，性能没有提升则不会保存此轮训练模型。（使用固定文件名时，仅保存整个训练过程中最佳的模型）
+- __mode__: {auto, min, max} 的其中之一。
+  如果 `save_best_only=True`，那么是否覆盖保存文件的决定就取决于被监测数据的最大或者最小值。
+  对于 `val_acc`，模式就会是 `max`，而对于 `val_loss`，模式就需要是 `min`，等等。
+  在 `auto` 模式中，方向会自动从被监测的数据的名字中判断出来。
+- __save_weights_only__: 
+  - 如果 True，那么只有模型的权重会被保存 (`model.save_weights(filepath)`)，
+  - 否则的话，整个模型会被保存 (`model.save(filepath)`)。
+- __period__: 每个检查点之间的间隔（训练轮数）。
+
+------
+
+<span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/callbacks.py#L460)</span>
+
+#### Example
+
+```python
+# mlp overfit on the moons dataset with patient early stopping and model checkpointing
+from sklearn.datasets import make_moons
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
+from matplotlib import pyplot
+from keras.models import load_model
+# generate 2d classification dataset
+X, y = make_moons(n_samples=100, noise=0.2, random_state=1)
+# split into train and test
+n_train = 30
+trainX, testX = X[:n_train, :], X[n_train:, :]
+trainy, testy = y[:n_train], y[n_train:]
+# define model
+model = Sequential()
+model.add(Dense(500, input_dim=2, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+# simple early stopping
+es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=200)
+mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
+# fit model
+history = model.fit(trainX, trainy, validation_data=(testX, testy), epochs=4000, verbose=0, callbacks=[es, mc])
+# load the saved model
+saved_model = load_model('best_model.h5')
+# evaluate the model
+_, train_acc = saved_model.evaluate(trainX, trainy, verbose=0)
+_, test_acc = saved_model.evaluate(testX, testy, verbose=0)
+print('Train: %.3f, Test: %.3f' % (train_acc, test_acc))
+```
+
+**Questions:**
+
+1. Why not monitor validation accuracy for early stopping?
+
+   This is a good question. The main reason is that accuracy is a coarse measure of model performance during training and that loss provides more nuance when using early stopping with classification problems. The same measure may be used for early stopping and model checkpointing in the case of regression, such as mean squared error.
+
 ### RemoteMonitor
 
 ```python
@@ -364,7 +508,6 @@ model.fit(...,
                      json_logging_callback,
                      cleanup_callback])
 ```
-
 
 ---
 

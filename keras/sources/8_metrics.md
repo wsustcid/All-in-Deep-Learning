@@ -1,7 +1,11 @@
-
 ## 评价函数的用法
 
-评价函数用于评估当前训练模型的性能。当模型编译后（compile），评价函数应该作为 `metrics` 的参数来输入。
+评价函数用于评估当前训练模型的性能。当模型编译后（compile），评价函数应该作为 `metrics` 的参数来输入(列表形式传入)。
+
+***Remark:***
+
+- 注意将其与评价指标 损失函数 `loss` 区分，训练模型仅仅需要损失函数和优化器参数就够了，优化算法根据损失函数值来反向传播更新参数；
+- 但损失函数值有时并不能直观的反应网络模型的训练效果，因此我们需要使用恰当的评价指标（如准确率等）来直观显示训练过程的效果变化，或用来控制训练何时停止。
 
 ```python
 model.compile(loss='mean_squared_error',
@@ -17,20 +21,18 @@ model.compile(loss='mean_squared_error',
               metrics=[metrics.mae, metrics.categorical_accuracy])
 ```
 
-评价函数和 [损失函数](/losses) 相似，只不过评价函数的结果不会用于训练过程中。
+评价函数和 [损失函数](/losses) 相似，只不过**评价函数的结果不会用于训练过程中**。
 
-我们可以传递已有的评价函数名称，或者传递一个自定义的 Theano/TensorFlow 函数来使用（查阅[自定义评价函数](#custom-metrics)）。
-
-__参数__
-
-  - __y_true__: 真实标签，Theano/Tensorflow 张量。
-  - __y_pred__: 预测值。和 y_true 相同尺寸的 Theano/TensorFlow 张量。
-
-__返回值__
-
-  返回一个表示全部数据点平均值的张量。
+- 我们可以传递已有的评价函数名称，
+- 或者传递一个自定义的 Theano/TensorFlow 函数来使用（查阅[自定义评价函数](#custom-metrics)）。
+  - __参数__：
+    - __y_true__: 真实标签，Theano/Tensorflow 张量。
+    - __y_pred__: 预测值。和 y_true 相同尺寸的 Theano/TensorFlow 张量。
+  - __返回值__：  返回一个表示全部数据点平均值的张量。
 
 ----
+
+
 
 ## 可使用的评价函数
 
