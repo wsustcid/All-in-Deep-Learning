@@ -12,9 +12,8 @@ keras.layers.BatchNormalization(axis=-1, momentum=0.99, epsilon=0.001, center=Tr
 
 __参数__
 
-- __axis__: 整数，需要标准化的轴（通常是特征轴）。
-  例如，在 `data_format="channels_first"` 的 `Conv2D` 层之后，
-  在 `BatchNormalization` 中设置 `axis=1`。
+- __axis__: 整数，需要标准化的轴（通常是特征轴-channel轴）。
+  - 例如，在 `data_format="channels_first"` 的 `Conv2D` 层之后，在 `BatchNormalization` 中设置 `axis=1`。
 - __momentum__: 移动均值和移动方差的动量。
 - __epsilon__: 增加到方差的小的浮点数，以避免除以零。
 - __center__: 如果为 True，把 `beta` 的偏移量加到标准化的张量上。

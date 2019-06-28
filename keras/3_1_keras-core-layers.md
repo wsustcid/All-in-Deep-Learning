@@ -1,3 +1,43 @@
+# Keras 核心网络层
+
+所有 Keras 网络层都有很多共同的函数：
+
+- `layer.get_weights()`: 以含有Numpy矩阵的列表形式返回层的权重。
+- `layer.set_weights(weights)`: 从含有Numpy矩阵的列表中设置层的权重（与`get_weights`的输出形状相同）。
+- `layer.get_config()`: 返回包含层配置的字典。此图层可以通过以下方式重置：
+
+```python
+layer = Dense(32)
+config = layer.get_config()
+reconstructed_layer = Dense.from_config(config)
+```
+
+或:
+
+```python
+from keras import layers
+
+config = layer.get_config()
+layer = layers.deserialize({'class_name': layer.__class__.__name__,
+                            'config': config})
+```
+
+如果一个层具有单个节点 (i.e. 如果它不是共享层), 你可以得到它的输入张量、输出张量、输入尺寸和输出尺寸:
+
+- `layer.input`
+- `layer.output`
+- `layer.input_shape`
+- `layer.output_shape`
+
+如果层有多个节点 (参见: [层节点和共享层的概念](/getting-started/functional-api-guide/#the-concept-of-layer-node)), 您可以使用以下函数:
+
+- `layer.get_input_at(node_index)`
+- `layer.get_output_at(node_index)`
+- `layer.get_input_shape_at(node_index)`
+- `layer.get_output_shape_at(node_index)`
+
+
+
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L767)</span>
 
 ### Dense
@@ -15,7 +55,6 @@ keras.layers.Dense(units, activation=None, use_bias=True, kernel_initializer='gl
 - __注意__: 如果该层的输入的秩大于2，那么它首先被展平然后再计算与 `kernel` 的点乘。
 
 __例__
-
 
 ```python
 # 作为 Sequential 模型的第一层
@@ -35,19 +74,19 @@ __参数__
   **若不指定，则不使用激活函数** (即，「线性」激活: `a(x) = x`)。
 - __use_bias__: 布尔值，该层是否使用偏置向量。
 - __kernel_initializer__: `kernel` 权值矩阵的初始化器
-(详见 [initializers](../initializers.md))。
+  (详见 [initializers](../initializers.md))。
 - __bias_initializer__: 偏置向量的初始化器
-(see [initializers](../initializers.md)).
+  (see [initializers](../initializers.md)).
 - __kernel_regularizer__: 运用到 `kernel` 权值矩阵的正则化函数
-(详见 [regularizer](../regularizers.md))。
+  (详见 [regularizer](../regularizers.md))。
 - __bias_regularizer__: 运用到偏置向的的正则化函数
-(详见 [regularizer](../regularizers.md))。
+  (详见 [regularizer](../regularizers.md))。
 - __activity_regularizer__: 运用到层的输出的正则化函数(它的 "activation")。
   (详见 [regularizer](../regularizers.md))。
 - __kernel_constraint__: 运用到 `kernel` 权值矩阵的约束函数
-(详见 [constraints](../constraints.md))。
+  (详见 [constraints](../constraints.md))。
 - __bias_constraint__: 运用到偏置向量的约束函数
-(详见 [constraints](../constraints.md))。
+  (详见 [constraints](../constraints.md))。
 
 __输入尺寸__
 
@@ -61,7 +100,7 @@ nD 张量，尺寸: `(batch_size, ..., units)`。
 例如，对于尺寸为 `(batch_size, input_dim)` 的 2D 输入，
 输出的尺寸为 `(batch_size, units)`。
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L276)</span>
 
@@ -76,20 +115,19 @@ keras.layers.Activation(activation)
 __参数__
 
 - __activation__: 要使用的激活函数的名称
-(详见: [activations](../activations.md))，
-或者选择一个 Theano 或 TensorFlow 操作。
+  (详见: [activations](../activations.md))，
+  或者选择一个 Theano 或 TensorFlow 操作。
 
 __输入尺寸__
 
 任意尺寸。
 当使用此层作为模型中的第一层时，使用参数 `input_shape`（整数元组，不包括样本数的轴）。
 
-
 __输出尺寸__
 
 与输入相同。
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L80)</span>
 
@@ -115,9 +153,10 @@ __参考文献__
 
 - [Dropout: A Simple Way to Prevent Neural Networks from Overfitting](http://www.jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf)
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L461)</span>
+
 ### Flatten
 
 ```python
@@ -128,10 +167,11 @@ keras.layers.Flatten(data_format=None)
 
 __参数__
 
-- __data_format__：一个字符串，其值为 `channels_last`（默认值）或者 `channels_first`。它表明输入的维度的顺序。此参数的目的是当模型从一种数据格式切换到另一种数据格式时保留权重顺序。`channels_last` 对应着尺寸为 `(batch, ..., channels)` 的输入，而 `channels_first` 对应着尺寸为 `(batch, channels, ...)` 的输入。默认为 `image_data_format` 的值，你可以在 Keras 的配置文件 `~/.keras/keras.json` 中找到它。如果你从未设置过它，那么它将是 `channels_last`
+- __data_format__：一个字符串，其值为 `channels_last`（默认值）或者 `channels_first`。它表明输入的维度的顺序。此参数的目的是当模型从一种数据格式切换到另一种数据格式时保留权重顺序。
+  - `channels_last` 对应着尺寸为 `(batch, ..., channels)` 的输入，而 `channels_first` 对应着尺寸为 `(batch, channels, ...)` 的输入。
+  - 默认为 `image_data_format` 的值，你可以在 Keras 的配置文件 `~/.keras/keras.json` 中找到它。如果你从未设置过它，那么它将是 `channels_last`
 
 __例__
-
 
 ```python
 model = Sequential()
@@ -143,9 +183,10 @@ model.add(Flatten())
 # 现在：model.output_shape == (None, 65536)
 ```
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/engine/input_layer.py#L114)</span>
+
 ### Input
 
 ```python
@@ -160,6 +201,7 @@ Keras 张量是底层后端(Theano, TensorFlow 或 CNTK) 的张量对象，我�
 `model = Model(input=[a, b], output=c)`
 
 添加的 Keras 属性是：
+
 - __`_keras_shape`__: 通过 Keras端的尺寸推理
   进行传播的整数尺寸元组。
 - __`_keras_history`__: 应用于张量的最后一层。
@@ -168,23 +210,22 @@ Keras 张量是底层后端(Theano, TensorFlow 或 CNTK) 的张量对象，我�
 __参数__
 
 - __shape__: 一个尺寸元组（整数），不包含批量大小。
-例如，`shape=(32,)` 表明期望的输入是按批次的 32 维向量。
+  例如，`shape=(32,)` 表明期望的输入是按批次的 32 维向量。
 - __batch_shape__: 一个尺寸元组（整数），包含批量大小。
   例如，`batch_shape=(10, 32)` 表明期望的输入是 10 个 32 维向量。`batch_shape=(None, 32)` 表明任意批次大小的 32 维向量。
 - __name__: 一个可选的层的名称的字符串。
   在一个模型中应该是唯一的（不可以重用一个名字两次）。如未提供，将自动生成。
 - __dtype__: 输入所期望的数据类型，字符串表示
-(`float32`, `float64`, `int32`...)
+  (`float32`, `float64`, `int32`...)
 - __sparse__: 一个布尔值，指明需要创建的占位符是否是稀疏的。
 - __tensor__: 可选的可封装到 `Input` 层的现有张量。
-如果设定了，那么这个层将不会创建占位符张量。
+  如果设定了，那么这个层将不会创建占位符张量。
 
 __返回__
 
 一个张量。
 
 __例__
-
 
 ```python
 # 这是 Keras 中的一个逻辑回归
@@ -193,7 +234,7 @@ y = Dense(16, activation='softmax')(x)
 model = Model(x, y)
 ```
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L310)</span>
 
@@ -201,6 +242,7 @@ model = Model(x, y)
 
 ```python
 keras.layers.Reshape(target_shape)
+
 ```
 
 将输入重新调整为特定的尺寸。
@@ -208,7 +250,7 @@ keras.layers.Reshape(target_shape)
 __参数__
 
 - __target_shape__: 目标尺寸。整数元组。
-**不包含表示批量的轴。**
+  **不包含表示批量的轴。**
 
 __输入尺寸__
 
@@ -220,7 +262,6 @@ __输出尺寸__
 `(batch_size,) + target_shape`
 
 __例__
-
 
 ```python
 # 作为 Sequential 模型的第一层
@@ -236,15 +277,18 @@ model.add(Reshape((6, 2)))
 # 还支持使用 `-1` 表示维度的尺寸推断
 model.add(Reshape((-1, 2, 2)))
 # 现在： model.output_shape == (None, 3, 2, 2)
+
 ```
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L409)</span>
+
 ### Permute
 
 ```python
 keras.layers.Permute(dims)
+
 ```
 
 根据给定的模式**置换输入的维度**。
@@ -253,19 +297,19 @@ keras.layers.Permute(dims)
 
 __例__
 
-
 ```python
 model = Sequential()
 model.add(Permute((2, 1), input_shape=(10, 64)))
 # 现在： model.output_shape == (None, 64, 10)
 # 注意： `None` 是批表示的维度
+
 ```
 
 __参数__
 
 - __dims__: 整数元组。置换模式，不包含样本维度。
-索引从 1 开始。
-例如, `(2, 1)` 置换输入的第一和第二个维度。
+  索引从 1 开始。
+  例如, `(2, 1)` 置换输入的第一和第二个维度。
 
 __输入尺寸__
 
@@ -275,7 +319,7 @@ __输出尺寸__
 
 与输入尺寸相同，但是维度根据指定的模式重新排列。
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L523)</span>
 
@@ -283,12 +327,12 @@ __输出尺寸__
 
 ```python
 keras.layers.RepeatVector(n)
+
 ```
 
 将输入重复 n 次。
 
 __例__
-
 
 ```python
 model = Sequential()
@@ -298,6 +342,7 @@ model.add(Dense(32, input_dim=32))
 
 model.add(RepeatVector(3))
 # 现在： model.output_shape == (None, 3, 32)
+
 ```
 
 __参数__
@@ -312,24 +357,27 @@ __输出尺寸__
 
 3D 张量，尺寸为 `(num_samples, n, features)`。
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L565)</span>
+
 ### Lambda
 
 ```python
 keras.layers.Lambda(function, output_shape=None, mask=None, arguments=None)
+
 ```
 
 将任意表达式封装为 `Layer` 对象。
 
 __例__
 
-
 ```python
 # 添加一个 x -> x^2 层
 model.add(Lambda(lambda x: x ** 2))
+
 ```
+
 ```python
 # 添加一个网络层，返回输入的正数部分
 # 与负数部分的反面的连接
@@ -349,22 +397,23 @@ def antirectifier_output_shape(input_shape):
 
 model.add(Lambda(antirectifier,
                  output_shape=antirectifier_output_shape))
+
 ```
 
 __参数__
 
 - __function__: 需要封装的函数。
-将输入张量作为第一个参数。
+  将输入张量作为第一个参数。
 - __output_shape__: 预期的函数输出尺寸。
-    只在使用 Theano 时有意义。
-    可以是元组或者函数。
-    如果是元组，它只指定第一个维度；
-    ​    样本维度假设与输入相同：
-    ​    `output_shape = (input_shape[0], ) + output_shape`
-    ​    或者，输入是 `None` 且样本维度也是 `None`：
-    ​    `output_shape = (None, ) + output_shape`
-    ​    如果是函数，它指定整个尺寸为输入尺寸的一个函数：
-    ​    `output_shape = f(input_shape)`
+  只在使用 Theano 时有意义。
+  可以是元组或者函数。
+  如果是元组，它只指定第一个维度；
+  ​    样本维度假设与输入相同：
+  ​    `output_shape = (input_shape[0], ) + output_shape`
+  ​    或者，输入是 `None` 且样本维度也是 `None`：
+  ​    `output_shape = (None, ) + output_shape`
+  ​    如果是函数，它指定整个尺寸为输入尺寸的一个函数：
+  ​    `output_shape = f(input_shape)`
 - __arguments__: 可选的需要传递给函数的关键字参数。
 
 __输入尺寸__
@@ -375,7 +424,7 @@ __输出尺寸__
 
 由 `output_shape` 参数指定 (或者在使用 TensorFlow 时，自动推理得到)。
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L911)</span>
 
@@ -383,6 +432,7 @@ __输出尺寸__
 
 ```python
 keras.layers.ActivityRegularization(l1=0.0, l2=0.0)
+
 ```
 
 网络层，对基于代价函数的输入活动应用一个更新。
@@ -402,7 +452,7 @@ __输出尺寸__
 
 与输入相同。
 
-----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L28)</span>
 
@@ -410,6 +460,7 @@ __输出尺寸__
 
 ```python
 keras.layers.Masking(mask_value=0.0)
+
 ```
 
 使用覆盖值覆盖序列，以跳过时间步。
@@ -418,7 +469,6 @@ keras.layers.Masking(mask_value=0.0)
 那么这个时间步将在所有下游层被覆盖 (跳过)（只要它们支持覆盖）。如果任何下游层不支持覆盖但仍然收到此类输入覆盖信息，会引发异常。
 
 __例__
-
 
 考虑将要喂入一个 LSTM 层的 Numpy 矩阵 `x`，尺寸为 `(samples, timesteps, features)`。
 你想要覆盖时间步 #3 和 #5，因为你缺乏这几个时间步的数据。你可以：
@@ -430,14 +480,18 @@ __例__
 model = Sequential()
 model.add(Masking(mask_value=0., input_shape=(timesteps, features)))
 model.add(LSTM(32))
+
 ```
----
+
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L140)</span>
+
 ### SpatialDropout1D
 
 ```python
 keras.layers.SpatialDropout1D(rate)
+
 ```
 
 Dropout 的 Spatial 1D 版本
@@ -460,13 +514,15 @@ __参考文献__
 
 - [Efficient Object Localization Using Convolutional Networks](https://arxiv.org/abs/1411.4280)
 
----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L177)</span>
+
 ### SpatialDropout2D
 
 ```python
 keras.layers.SpatialDropout2D(rate, data_format=None)
+
 ```
 
 Dropout 的 Spatial 2D 版本
@@ -490,13 +546,15 @@ __参考文献__
 
 - [Efficient Object Localization Using Convolutional Networks](https://arxiv.org/abs/1411.4280)
 
----
+------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/core.py#L227)</span>
+
 ### SpatialDropout3D
 
 ```python
 keras.layers.SpatialDropout3D(rate, data_format=None)
+
 ```
 
 Dropout 的 Spatial 3D 版本

@@ -5,27 +5,44 @@
 keras.layers.Embedding(input_dim, output_dim, embeddings_initializer='uniform', embeddings_regularizer=None, activity_regularizer=None, embeddings_constraint=None, mask_zero=False, input_length=None)
 ```
 
-将正整数（索引值）转换为固定尺寸的稠密向量。
-例如： [[4], [20]] -> [[0.25, 0.1], [0.6, -0.2]]
+- 将正整数（索引值）转换为固定尺寸的稠密向量。
 
-该层只能用作模型中的第一层。
+- 该层只能用作模型中的第一层。
 
 __例子__
 
 
 ```python
-model = Sequential()
-model.add(Embedding(1000, 64, input_length=10))
-# 模型将输入一个大小为 (batch, input_length) 的整数矩阵。
-# 输入中最大的整数（即词索引）不应该大于 999 （词汇表大小）
-# 现在 model.output_shape == (None, 10, 64)，其中 None 是 batch 的维度。
+from keras import Sequential
+from keras.layers import Embedding
+import numpy as np
 
+model = Sequential()
+# 输入: 大小为 (batch_size, input_length) 的整数矩阵
+# 且输入中的最大整数在0-999之间(词汇表的大小input_dim=1000)
+model.add(Embedding(1000, 64, input_length=10))
+# 输出：大小为(batch_size, 10, 64)
+
+# 构造输入数据
+# input_dim=1000, batch_size=32, input_length=10 
 input_array = np.random.randint(1000, size=(32, 10))
 
 model.compile('rmsprop', 'mse')
 output_array = model.predict(input_array)
 assert output_array.shape == (32, 10, 64)
 ```
+
+具体例子：
+
+```python
+ # 输入：
+ [[4], [20]] 
+ 
+ # 输出
+ [[0.25, 0.1], [0.6, -0.2]]
+```
+
+
 
 __参数__
 

@@ -237,15 +237,14 @@ keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_be
 __参数__
 
 - __filepath__: 字符串，保存模型的路径:
-  - 若使用固定的文件名如 `save_dir + "best_model.h5"` ，则 ==实验==
   - `filepath` 可以包括命名格式选项，可以由 `epoch` 的值和 `logs` 的键（由 `on_epoch_end` 参数传递）来填充。例如：如果 `filepath` 是 `weights.{epoch:02d}-{val_loss:.2f}.hdf5`，那么模型被保存的的文件名就会有训练轮数和验证集损失。
 - __monitor__: 被监测的数据。默认是验证集的损失函数值
 - __verbose__: 是否启用详细信息模式，0 或者 1 。
   - 为1时会输出保存信息：Epoch 00001: saving model to ..
-- __save_best_only__: 
-- Finally, we are interested in only the very best model observed during training, rather than the best compared to the previous epoch, which might not be the best overall if training is noisy. This can be achieved by setting the “*save_best_only*” argument to *True*.
-  - 默认为False，==实验==
-  - 如果 `save_best_only=True`，仅当此次回调时，监控指标比上一次好时才保存模型，性能没有提升则不会保存此轮训练模型。（使用固定文件名时，仅保存整个训练过程中最佳的模型）
+- __save_best_only__: Finally, we are interested in only the very best model observed during training, rather than the best compared to the previous epoch, which might not be the best overall if training is noisy. This can be achieved by setting the “*save_best_only*” argument to *True*.
+  - False(默认)：每个epoch的训练模型均保存
+  - True: 仅当(评价指标下)训练效果比之前的所有都好时进行保存
+  - 如果使用固定名称：如 `save_dir + "best_model.h5"` ，则最后仅会有一个模型被保存，当使用动态名称时，会有多个被保存
 - __mode__: {auto, min, max} 的其中之一。
   如果 `save_best_only=True`，那么是否覆盖保存文件的决定就取决于被监测数据的最大或者最小值。
   对于 `val_acc`，模式就会是 `max`，而对于 `val_loss`，模式就需要是 `min`，等等。
