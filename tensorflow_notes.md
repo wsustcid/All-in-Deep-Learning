@@ -51,4 +51,3 @@ python2 -m pip install ipython==5.7 --user
 ```
 python2 -m pip install ipykernel==4.10 --user
 ```
-

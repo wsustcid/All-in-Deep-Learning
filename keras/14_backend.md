@@ -321,11 +321,10 @@ __例子__
 >>> from keras import backend as K
 >>> K.image_data_format()
 'channels_first'
->>> K.set_image_data_format('channels_last')
+>>> K.set_image_data_format('channels_last') # 仅生效一次
 >>> K.image_data_format()
 'channels_last'
 ```
-
 
 ----
 
@@ -337,7 +336,6 @@ keras.backend.reset_uids()
 ```
 
 重置图的标识符。
-
 
 ----
 
@@ -965,7 +963,6 @@ array([[ 1.,  0.,  0.],
        [ 0.,  1.,  0.],
        [ 0.,  0.,  1.]], dtype=float32)
 ```
-
 
 ----
 
@@ -2530,7 +2527,6 @@ __返回__
 
 一个整数张量。
 
-
 ----
 
 ### tile
@@ -2710,7 +2706,6 @@ __返回__
 __异常__
 
 - __ValueError__: 如果 `data_format` 既不是 `"channels_last"` 也不是 `"channels_first"`。
-
 
 ----
 
@@ -2979,7 +2974,6 @@ __返回__
 
 单个张量或张量列表（取决于传递的参数），
 与任何其他变量具有恒定的梯度。
-
 
 ----
 
@@ -3387,7 +3381,6 @@ def hard_sigmoid(x):
     return np.clip(y, 0, 1)
 ```
 
-
 ----
 
 ### tanh
@@ -3468,7 +3461,6 @@ def l2_normalize(x, axis=-1):
     y = np.max(np.sum(x ** 2, axis, keepdims=True), axis, keepdims=True)
     return x / np.sqrt(y)
 ```
-
 
 ----
 

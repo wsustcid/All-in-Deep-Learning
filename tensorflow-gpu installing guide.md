@@ -290,7 +290,7 @@ sudo chmod a+r /usr/local/cuda/include/cudnn.h
 sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
 ```
 
-这样就成功了。测试的话去官网下载下来例程跑一下就OK了
+这样就成功了。测试的话去官网下载下来例程跑一下就OK了*-
 
 
 
@@ -298,13 +298,21 @@ sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
 
 https://keras-cn.readthedocs.io/en/latest/for_beginners/keras_linux/
 
-```
+```python
 pip install keras
 ```
 
-*The pip install command also supports a --pre flag that will enable installing pre-releases and development releases.*
+The pip install command also supports a --pre flag that will enable installing pre-releases and development releases.**
 
+***Remark:***
 
+- 2.2.4 版本BatchNormalization() 函数使用 axis=1时（针对通道在前的输入）会报错，这是版本bug，目前无法解决，建议降低到2.16版本：
+
+  ```python
+  pip install keras==2.1.6
+  ```
+
+  
 
 ## 1.7 Jupyter notebook
 
