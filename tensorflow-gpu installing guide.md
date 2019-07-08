@@ -143,7 +143,22 @@ nvidia-settings #若弹出设置对话框，亦表示驱动安装成功
   export LD_LIBRARY_PATH=/usr/local/cuda-9.0/lib64:$LD_LIBRARY_PATH
   ```
 
-  然后source一下，或者重启，就OK了。
+  然后source一下，最好重启一下，不然后面导入tensorflow时会报错提示, 到时仍然出现错误请尝试下面的路径添加方案。目前先跳过
+
+  ```python
+  错误：ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory 
+  问题：找不到cuda9.0的版本。 
+  出现该错误的主要原因：cuda未安装或者cuda的版本有问题
+  对于tensorflow 1.7版本，只接受cuda 9.0（9.1也不可以！），和cudnn 7.0，所以如果你安装了cuda9.1和cudnn7.1或以上版本，那么你需要重新安装9.0和7.0版本。
+  
+  安装完正确的版本后，确认你在你的~/.bashrc（或者~/.zshrc）文件中加入了下面环境变量
+  
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64
+  export PATH=$PATH:/usr/local/cuda-9.0/bin
+  export CUDA_HOME=$CUDA_HOME:/usr/local/cuda-9.0
+  ```
+
+  
 
 - 测试是否安装成功： cd到CUDA样例里，NVIDIA_CUDA-9.0_Samples，然后其实可以全部make一下所有样例，时间比较长，但也可以cd到单独样例里然后make
 
@@ -174,10 +189,30 @@ nvidia-settings #若弹出设置对话框，亦表示驱动安装成功
 
     输出大概长这样：PASS就是成功了。
 
+## 1.4 Install cuDNN
 
-## 1.4 Install TensorFlow with pip
+1. 仍然去官网下载source，<https://developer.nvidia.com/rdp/cudnn-download>下载第一个，就是cuDNN v7.1.4 Library for Linux
+2. 下载之后，
 
-### 1.4.1 Install the Python development environment on your system
+```
+tar -zxvf cudnn-9.0-linux-x64-v7.1.tgz
+```
+
+解压，然后
+
+```
+sudo cp cuda/include/cudnn.h /usr/local/cuda/include/
+sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64/
+sudo chmod a+r /usr/local/cuda/include/cudnn.h
+sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
+```
+
+这样就成功了。测试的话去官网下载下来例程跑一下就OK了*-
+
+
+## 1.5 Install TensorFlow with pip
+
+### 1.5.1 Install the Python development environment on your system
 
 Note: 
 
@@ -199,7 +234,7 @@ sudo apt-get install python-pip python-dev python-virtualenv   # for Python 2.7
 sudo apt-get install python3-pip python3-dev python-virtualenv # for Python 3.n
 ```
 
-### 1.4.2 Create a virtual environment (recommended)
+### 1.5.2 Create a virtual environment (recommended)
 
 Python virtual environments are used to isolate package installation from the system.
 
@@ -238,7 +273,7 @@ And to exit virtualenv later:
 deactivate  # don't exit until you're done using TensorFlow
 ```
 
-### 1.4.3 Install the TensorFlow pip package
+### 1.5.3 Install the TensorFlow pip package
 
 Choose one of the following TensorFlow packages to install [from PyPI](https://pypi.org/project/tensorflow/):
 
@@ -272,25 +307,7 @@ tf.__path__
 
 
 
-## 1.5 Install cuDNN
 
-1. 仍然去官网下载source，<https://developer.nvidia.com/rdp/cudnn-download>下载第一个，就是cuDNN v7.1.4 Library for Linux
-2. 下载之后，
-
-```
-tar -zxvf cudnn-9.0-linux-x64-v7.1.tgz
-```
-
-解压，然后
-
-```
-sudo cp cuda/include/cudnn.h /usr/local/cuda/include/
-sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64/
-sudo chmod a+r /usr/local/cuda/include/cudnn.h
-sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
-```
-
-这样就成功了。测试的话去官网下载下来例程跑一下就OK了*-
 
 
 
