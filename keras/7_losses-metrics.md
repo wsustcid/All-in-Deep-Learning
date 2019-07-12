@@ -82,6 +82,10 @@ $$
 - 将不同范围的目标值产生的误差调整到统一范围，用相对误差的百分比来衡量
 - 优化过程及优化曲线将更为直观
 
+**缺点：**
+
+- 当分母及样本真值有较多0存在时，因为分母为0时计算时会用一个极小值替代，从而产生不合理的极大地MAPE，因此不建议使用
+
 #### 4. MSLE: Mean Squared Logarithmic Error (均方对数误差)
 
 $$
@@ -619,7 +623,6 @@ from .utils.generic_utils import serialize_keras_object
 
 def mean_squared_error(y_true, y_pred):
     return K.mean(K.square(y_pred - y_true), axis=-1)
-
 
 def mean_absolute_error(y_true, y_pred):
     return K.mean(K.abs(y_pred - y_true), axis=-1)
@@ -1165,13 +1168,17 @@ $$
 #### 2. R-square: Coefficient of determination (决定系数)
 
 $$
-R^2 = 1-\frac{\sum (y_{true}-y_{pred})^2 }{\sum (y_{true}-y_{mean})^2}
+R^2 =  1-\frac{\sum (y_{true}-y_{pred})^2 }{\sum (y_{true}-y_{mean})^2}
 $$
+
+
 
 **名词解释：**
 
 残差： $e=y_{true}-y_{pred}$
-
+$$
+y_{mean}=\sum_{i=1}^n y_{true}
+$$
 残差平方和SSE: The Sum of Squares due to Error 
 $$
 SSE = \sum(y_{true}-y_{pred})^2
@@ -1180,26 +1187,19 @@ $$
 $$
 SST = \sum(y_{true}-y_{mean})^2
 $$
-其中 $y_{mean}=\sum_{i=1}^n y_i$
-
-回归平方和：Sum of Squares of the Regression
-$$
-SSR = \sum(y_{pred}-y_{mean})^2
-$$
 解释：
 
-- 从原始定义角度：$R^2$ 原始定义为回归平方和与总平方和比值，分子为预测值相对与均值的偏离程度，分母为真值相对于均值的偏离程度（作为基准），最佳情况为预测值等于真值，二者比值为1，最差情况是预测值等于均值，比值为0
-
-$$
-R^2 = \frac{SSR}{SST} = \frac{SST-SSE}{SST} = 1-\frac{SSE}{SST}
-$$
-
 - 从残差的角度：第二项的分子为使用模型预测值产生的误差，分母为采用均值作为预测值产生的误差（基准值），当模型预测值为真值是模型最优，第二项值为0，最差是模型预测值为均值，第二项值为1
-- 从方差的角度：若第二项分子分母同时除以样本数n，则分子为MSE，分母为样本方差，表征原始数据的离散程度。MSE除以样本方差用来消除原始数据离散程度对结果造成的影响，这样当原始数据集离散程度过大或过小时，对应的缩小或夸大误差，使得最终都能得到类似的$R^2$值。
+
+- 从方差的角度：若第二项分子分母同时除以样本数n，则分子为MSE，分母为样本方差，表征原始数据的离散程度。MSE除以样本方差用来消除原始数据离散程度对结果造成的影响，这样当原始数据集离散程度过大或过小时，对应的缩小或放大误差，使得最终都能得到类似的$R^2$值。
 
 标准：
 
 - 越接近1越好 （经验值>0.4拟合效果好）
+
+优点：
+
+- 消除样本分布不均衡造成的对误差的影响（交叉验证时样本分布可能不同）
 
 缺点：
 
@@ -1215,7 +1215,7 @@ $$
 
 优点：
 
-- 抵消样本数量对$R^2$的影响，真正做到[0,1]区间，值越大模型越好
+- 抵消样本数量对$R^2$的影响，真正做到[0,1]区间，值越大模型越好，可用于不同数据集之间的比较
 - 当$R^2$相同，样本数量也相同时，使用样本特征少的模型更优
 
 #### 4. EVS: Explained Variance Score (解释方差分数)
@@ -1292,18 +1292,47 @@ plt.plot(hist.history['mean_pred'], label='mean_pred')
 
 由于这个原因，我建议最好使用后端提供的数学函数来进行计算，这样可以保证一致性和运行速度。
 
-#### 均方根误差（RMSE）。
+参考：<https://github.com/keras-team/keras/blob/master/keras/backend/tensorflow_backend.py>
 
 你可以通过观察官方提供的性能评估指标函数来学习如何编写自定义指标。
 
 下面展示的是[Keras中mean_squared_error损失函数（即均方差性能评估指标）](https://github.com/fchollet/keras/blob/master/keras/losses.py)的代码。
 
-```js
+```python
 def mean_squared_error(y_true, y_pred):
     return K.mean(K.square(y_pred - y_true), axis=-1)
 ```
 
-K是Keras使用的后端(例如TensorFlow)。从这个例子以及其他损失函数和性能评估指标可以看出：需要使用后端提供的标准数学函数来计算我们感兴趣的性能评估指标。
+注意：
+
+- K是Keras使用的后端(例如TensorFlow)。从这个例子以及其他损失函数和性能评估指标可以看出：需要使用后端提供的标准数学函数来计算我们感兴趣的性能评估指标。
+
+- **为何使用K.mean(, axis=-1)， 返回与数据集同长度一维数据点列表：**
+
+  - 如果维的，如(10000,2),要按照mse标准公式去计算的话就要把所要的误差平方加起来，但求均值应该除以20000，最后返回一个值；可能考虑到Keras会自动将返回的列表所有元素相加取均值，因此这里先计算每个数据点的均方误差，然后利用keras fit函数自动计算总的误差均值，公式为：
+    $$
+    Li = \frac{e_{i1}^2+e_{i2}^2}{2} \\
+    
+    L = (\frac{e_{11}^2+e_{12}^2}{2} + \frac{e_{21}^2+e_{22}^2}{2} + ```+\frac{e_{n1}^2+e_{n2}^2}{2} ) * \frac{1}{n}
+    $$
+    
+
+  - 其实等价于
+    $$
+    L = \frac{e_{11}^2+e_{12}^2 + e_{21}^2+e_{22}^2 + ``` + e_{n1}^2+e_{n2}}{2n}
+    $$
+    
+
+    我们也可以直接计算，只返回一个数据点，结果是一样的：
+
+    ```python
+    def mean_squared_error(y_true, y_pred):
+        return K.mean(K.square(y_pred - y_true))
+    ```
+
+    
+
+#### 均方根误差（RMSE）
 
 现在我们可以尝试编写一个自定义性能评估函数来计算RMSE，如下所示：
 
@@ -1311,8 +1340,7 @@ K是Keras使用的后端(例如TensorFlow)。从这个例子以及其他损失�
 from keras import backend as K
  
 def rmse(y_true, y_pred):
-    return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
- 
+    return K.sqrt(K.mean(K.square(y_pred - y_true)))
 ```
 
 你可以看到除了用`sqrt()`函数封装结果之外，这个函数的代码和MSE是一样的。
@@ -1321,28 +1349,106 @@ def rmse(y_true, y_pred):
 
 ```python
 def r_square(y_true, y_pred):
-    SSR = K.mean(K.square(y_pred-K.mean(y_true)),axis=-1)
-    SST = K.mean(K.square(y_true-K.mean(y_true)),axis=-1)
-    return SSR/SST
+    from keras import backend as K
+    SS_res =  K.sum(K.square(y_true-y_pred))
+    SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
+    return 1 - SS_res/K.clip(SS_tot,K.epsilon(),None)
 ```
+
+
 
 #### Adjusted R-square
 
-#### 
+```python
+def ad_r_square(y_true, y_pred):
+    SS_res =  K.sum(K.square(y_true-y_pred))
+    SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
+    R2 = 1 - SS_res/K.clip(SS_tot,K.epsilon(),None)
+    return 1.0 - ((1.0-R2)*(n-1))/(n-p-1)
+```
 
-$$
-R^2_{adjust} = 1 - \frac{(1-R^2)(n-1)}{n-p-1}
-$$
+#### EVA
 
-
+**EVA: Explained Variance Ratio**
 
 ```python
-def ad_r_square(y_true, y_pred, p):
-    SSR = K.mean(K.square(y_pred-K.mean(y_true)),axis=-1)
-    SST = K.mean(K.square(y_true-K.mean(y_true)),axis=-1)
-    R2 = SSR/SST
-    n  = len(y_true)
+def eva(y_true, y_pred):
+    var_e = K.var(y_true-y_pred)
+    var_y = K.var(y_true)
+    return var_e/K.clip(var_y, K.epsilon(), None)
+```
+
+
+
+**测试程序：**
+
+```python
+import numpy as np
+from keras.models import Model
+from keras.layers import Input
+from keras import backend as K
+
+def mse_new(y_true, y_pred):
+    return K.mean(K.square(y_true-y_pred))
+
+def rmse(y_true, y_pred):
+    return K.sqrt(K.mean(K.square(y_pred - y_true)))
+
+def r_square(y_true, y_pred):
+    SS_res =  K.sum(K.square( y_true-y_pred ))
+    SS_tot = K.sum(K.square( y_true - K.mean(y_true) ) )
+    return 1 - SS_res/K.clip(SS_tot,K.epsilon(),None)
+
+def ad_r_square(y_true, y_pred):
+    SS_res =  K.sum(K.square(y_true-y_pred))
+    SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
+    R2 = 1 - SS_res/K.clip(SS_tot,K.epsilon(),None)
     return 1.0 - ((1.0-R2)*(n-1))/(n-p-1)
+
+def eva(y_true, y_pred):
+    var_e = K.mean(K.square((y_true-y_pred) - K.mean(y_true-y_pred)))
+    var_y = K.mean(K.square(y_true-K.mean(y_true)))
+    return var_e/K.clip(var_y, K.epsilon(), None)
+
+def EVA(y_true, y_pred):
+    var_e = K.var(y_true-y_pred)
+    var_y = K.var(y_true)
+    return var_e/K.clip(var_y, K.epsilon(), None)
+
+X = np.array([[2,2],[2,2],[3,3],[4,4]])
+Y = np.array([[2,2],[2,2],[3,3],[4,4]])
+
+# X = np.array([1,2,3,4,5,6])
+# Y = np.array([2,3,4,5,6,7])
+
+global n 
+n = len(Y)
+global p 
+p = 0
+
+x = Input(shape=(2,))
+y = x
+
+model = Model(inputs=x, outputs=y) 
+
+model.compile(loss='mse', optimizer='adam', 
+              metrics=['mse', 'mae', 'mape', 'msle', 
+                       rmse, r_square, ad_r_square, eva,EVA,
+                       mse_new])
+model.summary()
+
+hist = model.fit(x=X,y=Y, epochs=1)
+
+print "mse:", hist.history['mean_squared_error']
+print "mae:", hist.history['mean_absolute_error']
+print "mape:", hist.history['mean_absolute_percentage_error']
+print "msle:", hist.history['mean_squared_logarithmic_error']
+print "rmse:", hist.history['rmse']
+print "r_square:", hist.history['r_square']
+print "ad_r_square:", hist.history['ad_r_square']
+print "eva:", hist.history['eva']
+print "EVA:", hist.history['EVA']
+print "mse_new:", hist.history['mse_new']
 ```
 
 
@@ -1698,6 +1804,92 @@ Repeats Stratified K-Fold n times.
 
 
 # 附录
+
+## keras 数据处理函数
+
+#### keras.backend.mean
+
+```python
+def mean(x, axis=None, keepdims=False):
+    """Mean of a tensor, alongside the specified axis.
+    # Arguments
+        x: A tensor or variable.
+        axis: An integer or list of integers in [-rank(x), rank(x)),
+            the axes to compute the mean. If `None` (default), computes
+            the mean over all dimensions.
+        keepdims: A boolean, whether to keep the dimensions or not.
+            If `keepdims` is `False`, the rank of the tensor is reduced
+            by 1 for each entry in `axis`. If `keepdims` is `True`,
+            the reduced dimensions are retained with length 1.
+    # Returns
+        A tensor with the mean of elements of `x`.
+    {{np_implementation}}
+    """
+    if x.dtype.base_dtype == tf.bool:
+        x = tf.cast(x, floatx())
+    return tf.reduce_mean(x, axis, keepdims)
+```
+
+如果使用tf作为后端的话，可以看出，keras使用的是**tf.reduce_mean()**函数来计算均值，具体原理如下：
+
+```python
+reduce_mean(input_tensor,
+                axis=None,
+                keep_dims=False,
+                name=None)
+```
+
+功能：
+
+- 用于计算张量沿着指定的数轴(tensor上的某一维度)上的平均值
+- 同时可以选择是否降维
+
+参数：
+
+- input_tensor: 待计算均值的张量
+- axis: 指定要计算均值的轴，如果不指定，则计算所有元素的均值
+- keep_dims: 是否降维，True的话会保持与输入tensor维度一致；默认降维
+- name: 定义操作的名称
+
+例子：
+
+```python
+import tensorflow as tf
+ 
+x = [[1,2,3],
+     [1,2,3]]
+ 
+xx = tf.cast(x,tf.float32)
+ 
+mean_all = tf.reduce_mean(xx)
+mean_0 = tf.reduce_mean(xx, axis=0)
+mean_1 = tf.reduce_mean(xx, axis=1)
+
+with tf.Session() as sess:
+    m_a,m_0,m_1 = sess.run([mean_all, mean_0, mean_1])
+    
+print m_a    # output: 2.0
+print m_0    # output: [ 1.  2.  3.]
+print m_1    #output:  [ 2.  2.]
+```
+
+若使用`keepdims`参数（新版本），则输出为：
+
+```python
+[[2.]]
+[[1. 2. 3.]]
+[[2.]
+ [2.]]
+```
+
+
+
+**类似函数还有:**
+
+- tf.reduce_sum ：计算tensor指定轴方向上的所有元素的累加和;
+- tf.reduce_max  :  计算tensor指定轴方向上的各个元素的最大值;
+- tf.reduce_all :  计算tensor指定轴方向上的各个元素的逻辑和（and运算）;
+- tf.reduce_any:  计算tensor指定轴方向上的各个元素的逻辑或（or运算）;
 
 ## 协方差与相关系数
 
