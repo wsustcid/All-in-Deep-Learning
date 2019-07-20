@@ -1315,22 +1315,30 @@ def mean_squared_error(y_true, y_pred):
     
     L = (\frac{e_{11}^2+e_{12}^2}{2} + \frac{e_{21}^2+e_{22}^2}{2} + ```+\frac{e_{n1}^2+e_{n2}^2}{2} ) * \frac{1}{n}
     $$
-    
-
-  - 其实等价于
+  
+- 其实等价于
     $$
     L = \frac{e_{11}^2+e_{12}^2 + e_{21}^2+e_{22}^2 + ``` + e_{n1}^2+e_{n2}}{2n}
     $$
     
-
-    我们也可以直接计算，只返回一个数据点，结果是一样的：
-
-    ```python
+  
+  我们也可以直接计算，只返回一个数据点，结果是一样的：
+  
+  ```python
     def mean_squared_error(y_true, y_pred):
         return K.mean(K.square(y_pred - y_true))
-    ```
+  ```
+  
+- **使用自定义评价函数时**，对于使用`load_model()`导入的模型将无法识别自定义函数的 字符串变量，因此要预先定义一个字典，导入模型时将自定义的关键字传入：
 
-    
+  ```python
+  dependencies = {'RMSE': RMSE, 'val_RMSE': RMSE, 
+                  'R_SQUARE': R_SQUARE, 'val_R_SQUARE': R_SQUARE}
+                  
+  best_model = load_model(model_name, custom_objects=dependencies)
+  ```
+
+  
 
 #### 均方根误差（RMSE）
 
@@ -1452,6 +1460,41 @@ print "mse_new:", hist.history['mse_new']
 ```
 
 
+
+#### numpy 实现
+
+```python
+def mse(y_true, y_pred):
+    import numpy as np
+    
+    return np.mean(np.square(y_true-y_pred))
+
+def rmse(y_true, y_pred):
+    import numpy as np
+    
+    return np.sqrt(np.mean(np.square(y_true-y_pred)))
+
+def mae(y_true, y_pred):
+    import numpy as np
+    
+    return np.mean(np.abs(y_true-y_pred))
+
+def r_square(y_true, y_pred):
+    import numpy as np
+    sse = np.sum(np.square(y_true-y_pred))
+    sst = np.sum(np.square(y_true-np.mean(y_true)))
+    r2  = 1 - sse/sst
+    return r2
+
+def ad_r_square(y_true, y_pred, p):
+    import numpy as np
+    sse = np.sum(np.square(y_true-y_pred))
+    sst = np.sum(np.square(y_true-np.mean(y_true)))
+    r2  = 1 - sse/sst
+    n   = y_true.shape[0]
+    return 1 - (1-r2)*(n-1)/(n-1-p)
+
+```
 
 
 
@@ -1782,6 +1825,46 @@ for train_index, test_index in rkf.split(X):
 https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RepeatedStratifiedKFold.html#sklearn.model_selection.RepeatedStratifiedKFold
 
 Repeats Stratified K-Fold n times.
+
+
+
+完整示例：
+
+```python
+# MLP for Pima Indians Dataset with 10-fold cross validation
+from keras.models import Sequential
+from keras.layers import Dense
+from sklearn.model_selection import StratifiedKFold
+import numpy
+# fix random seed for reproducibility
+seed = 7
+numpy.random.seed(seed)
+# load pima indians dataset
+dataset = numpy.loadtxt("pima-indians-diabetes.csv", delimiter=",")
+# split into input (X) and output (Y) variables
+X = dataset[:,0:8]
+Y = dataset[:,8]
+# define 10-fold cross validation test harness
+kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed)
+cvscores = []
+for train, test in kfold.split(X, Y):
+  # create model
+    model = Sequential()
+    model.add(Dense(12, input_dim=8, activation='relu'))
+    model.add(Dense(8, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    # Compile model
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    # Fit the model
+    model.fit(X[train], Y[train], epochs=150, batch_size=10, verbose=0)
+    # evaluate the model
+    scores = model.evaluate(X[test], Y[test], verbose=0)
+    print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
+    cvscores.append(scores[1] * 100)
+print("%.2f%% (+/- %.2f%%)" % (numpy.mean(cvscores), numpy.std(cvscores)))
+```
+
+
 
 ### 3.2.3 留一法
 
