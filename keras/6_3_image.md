@@ -413,3 +413,73 @@ __参数__
 __返回__
 
 标准化后的输入。
+
+
+
+# 附录
+
+## 白化
+
+白化的目的是去除输入数据的冗余信息。假设训练数据是图像，由于图像中相邻像素之间具有很强的相关性，所以用于训练时输入是冗余的；白化的目的就是降低输入的冗余性。
+
+输入数据集X，经过白化处理后，新的数据X'满足两个性质：
+
+- 特征之间相关性较低；
+- 所有特征具有相同的方差。
+      
+
+PCA给我们的印象是一般用于降维操作。然而其实PCA如果不降维，而是仅仅使用PCA求出特征向量，然后把数据X映射到新的特征空间，这样的一个映射过程，其实就是满足了我们白化的第一个性质：除去特征之间的相关性。因此白化算法的实现过程，第一步操作就是PCA，求出新特征空间中X的新坐标，然后再对新的坐标进行方差归一化操作。
+
+PCA的数学原理
+
+<https://zhuanlan.zhihu.com/p/21580949>
+
+**算法概述：**
+白化分为PCA白化、ZCA白化，下面主要讲解算法实现。这部分主要是学了UFLDL的深度学习《白化》教程：http://ufldl.stanford.edu/wiki/index.php/%E7%99%BD%E5%8C%96，算法实现步骤如下：
+
+1. 首先是PCA预处理
+
+   ​                   <img src=https://img-blog.csdn.net/20160312120157759 > <img src= https://img-blog.csdn.net/20160312120205309 >    
+   上面图片，左图表示原始数据X，然后我们通过协方差矩阵可以求得特征向量u1、u2，然后把每个数据点，投影到这两个新的特征向量，得到进行坐标如下：
+
+   ![img](https://img-blog.csdn.net/20160312120214088)
+
+   这就是所谓的pca处理。
+
+2. PCA白化
+   所谓的pca白化是指对上面的pca的新坐标X’,每一维的特征做一个标准差归一化处理。因为从上面我们看到在新的坐标空间中，(x1,x2)两个坐标轴方向的数据明显标准差不同，因此我们接着要对新的每一维坐标做一个标注差归一化处理：
+   $$
+   X''_{PCAWhite} = \frac{X'}{std(X')}
+   $$
+也可以采用下面的公式：
+   $$
+   X''_{PCAWhite} = \frac{X'}{\sqrt{\lambda_i + \varepsilon}}
+   $$
+   其中`X'`为经过PCA处理的新PCA坐标空间,然后λi就是第i维特征对应的特征值（前面pca得到的特征值），ε是为了避免除数为0。
+
+
+
+3. ZCA白化
+   ZCA白化是在PCA白化的基础上，又进行处理的一个操作。具体的实现是把上面PCA白化的结果，又变换到原来坐标系下的坐标：
+   $$
+   Y_{ZCAWhite} = U * Y_{PCAwhite}
+   $$
+   
+
+具体源码实现如下：
+
+```python
+def zca_whitening(inputs):
+    sigma = np.dot(inputs, inputs.T)/inputs.shape[1] #inputs是经过归一化处理的，所以这边就相当于计算协方差矩阵
+    U,S,V = np.linalg.svd(sigma) #奇异分解
+    epsilon = 0.1                #白化的时候，防止除数为0
+    ZCAMatrix = np.dot(np.dot(U, np.diag(1.0/np.sqrt(np.diag(S) + epsilon))), U.T)                     #计算zca白化矩阵
+    return np.dot(ZCAMatrix, inputs)   #白化变换
+
+
+```
+
+
+
+参考文献：
+1、http://ufldl.stanford.edu/wiki/index.php/%E7%99%BD%E5%8C%96
