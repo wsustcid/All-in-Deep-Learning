@@ -1995,9 +1995,9 @@ All the networks are trained using stochastic gradient descent (**SGD**).
 - On CIFAR and SVHN we train using batch size 64 for 300 and 40 epochs, respectively. The initial learning rate is set to 0.1, and is divided by 10 at 50% and 75% of the total number of training epochs. 
 - On ImageNet, we train models for 90 epochs with a batch size of 256. The learning rate is set to 0.1 initially, and is lowered by 10 times at epoch 30 and 60. 
 - Note that a naive implementation of DenseNet may contain memory inefficiencies. To reduce the memory consumption on GPUs, **please refer to our technical report on the memory-efficient implementation of DenseNets [26].** 
-- Following [8], we use a weight decay of 10−4 and a Nesterov momentum [35] of 0.9 without dampening. 
-- We adopt the weight initialization introduced by [10]. 
-- For the three datasets without data augmentation, i.e., C10, C100 and SVHN, we add a dropout layer [33] after each convolutional layer (except the first one) and set the dropout rate to 0.2. The test errors were only evaluated once for each task and model setting.
+- Following [8], we use a **weight decay of 10−4 and a Nesterov momentum [35] of 0.9 without dampening**. 
+- We adopt the **weight initialization introduced by [10]**. 
+- For the three datasets without data augmentation, i.e., C10, C100 and SVHN, we add a **dropout layer [33] after each convolutional layer** (except the first one) and **set the dropout rate to 0.2**. The test errors were only evaluated once for each task and model setting.
 
 #### 4.3 Classification Results on CIFAR and SVHN
 

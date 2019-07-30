@@ -1614,7 +1614,14 @@ write your own tensor padding
 
 <https://github.com/keras-team/keras/issues/9508>
 
+deep learning - Why do people use Zero-Padding in Convolutional Neural Networks? - Cross Validated
+https://stats.stackexchange.com/questions/400508/why-do-people-use-zero-padding-in-convolutional-neural-networks
 
+medium.com
+https://medium.com/machine-learning-algorithms/what-is-padding-in-convolutional-neural-network-c120077469cc
+
+Convolutional Neural Networks (CNNs): An Illustrated Explanation - XRDSXRDS
+https://blog.xrds.acm.org/2016/06/convolutional-neural-networks-cnns-illustrated-explanation/
 
 ------
 
@@ -3609,6 +3616,17 @@ __参数__
 
 
 # normalization
+
+
+
+Batch Normalization学习笔记及其实现 - 知乎
+https://zhuanlan.zhihu.com/p/26138673
+
+(1条消息)深度学习——Batch Normalization - CodeTutor - CSDN博客
+https://blog.csdn.net/VictoriaW/article/details/73558778
+
+(1条消息)Batch Normalization导读 - 张俊林的博客 - CSDN博客
+https://blog.csdn.net/malefactor/article/details/51476961
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/normalization.py#L16)</span>
 

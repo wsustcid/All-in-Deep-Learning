@@ -700,6 +700,12 @@ __返回__
 
 
 
+# 通用方法
+
+`Sequence` 是进行多进程处理的更安全的方法。这种结构保证网络在每个时期每个样本只训练一次，这与生成器不同。
+
+<https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly>
+
 # 附录
 
 ## 白化

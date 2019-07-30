@@ -1,6 +1,6 @@
  # Deep Learning Tutorial 
 
-This tutorial aims to guide people doing research with deep learning technology. Following five projects are provided to everyone to learn deep learning step by step from theory to applications. 
+This tutorial aims to guide people doing research with deep learning technology. The following five projects are provided to everyone to learn deep learning step by step from theory to applications. 
 
 
 
@@ -12,7 +12,7 @@ This is an awesome online free course which teaches deep learning. If you are go
 
 
 
-## 2. Deep Learning with keras
+## 2. Deep Learning Tutorial with Keras
 
 This tutorial aims to help you learning deep learning by practice. The tutorial was written based on the Chinese version of Keras official documents. Some theory background of the code is added to understand and use keras more  easily.
 
@@ -20,7 +20,7 @@ This tutorial aims to help you learning deep learning by practice. The tutorial 
 
 ## 3. XXNet
 
-A detailed summary of the deep learning classic network architectures from 2012 to the present.
+A detailed summary of the classic deep learning network architectures from 2012 to the present.
 
 
 
