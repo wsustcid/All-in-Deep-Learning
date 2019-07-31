@@ -1,8 +1,12 @@
 # Chinese (zh-cn) translation of the Keras docs
 
-转载自 [Keras官方中文文档](https://keras.io/zh/)， 并整理修改。
+核心内容转载自[keras-zh](https://keras-zh.readthedocs.io/)，并整理修改。
 
-有关最新文档，请访问 Read the Docs 备份版本：[keras-zh](https://keras-zh.readthedocs.io/)，每月更新。
+
+
+注：中文文档更新较慢且翻译有时会不准确，建议时常查看官方英文文档并对本项目做相应更新。
+
+英文官网：<https://keras.io/>
 
 
 
