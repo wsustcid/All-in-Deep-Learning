@@ -357,6 +357,16 @@ fit(x=None, y=None, batch_size=None, epochs=1, verbose=1, callbacks=None, valida
 
 以固定数量的轮次（数据集上的迭代）训练模型。
 
+update:
+
+````python
+fit(x=None, y=None, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.0, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1)
+````
+
+- **validation_freq**: Only relevant if validation data is provided. Integer or list/tuple/set. If an integer, specifies how many training epochs to run before a new validation run is performed, e.g. `validation_freq=2` runs validation every 2 epochs. If a list, tuple, or set, specifies the epochs on which to run validation, e.g. `validation_freq=[1, 2, 10]` runs validation at the end of the 1st, 2nd, and 10th epochs.
+
+
+
 __参数__
 
 - __x__: 训练数据的 Numpy 数组
@@ -425,6 +435,14 @@ evaluate(x=None, y=None, batch_size=None, verbose=1, sample_weight=None, steps=N
 
 计算逐批次进行。
 
+update:
+
+```python
+evaluate(x=None, y=None, batch_size=None, verbose=1, sample_weight=None, steps=None, callbacks=None)
+```
+
+- **callbacks**: List of `keras.callbacks.Callback` instances. List of callbacks to apply during evaluation. See [callbacks](https://keras.io/callbacks).
+
 __参数__
 
 - __x__: 训练数据的 Numpy 数组。
@@ -465,6 +483,14 @@ predict(x, batch_size=None, verbose=0, steps=None)
 为输入样本生成输出预测。
 
 计算逐批次进行。
+
+update:
+
+```python
+predict(x, batch_size=None, verbose=0, steps=None, callbacks=None)
+```
+
+- **callbacks**: List of `keras.callbacks.Callback` instances. List of callbacks to apply during prediction. See [callbacks](https://keras.io/callbacks).
 
 __参数__
 
@@ -533,7 +559,6 @@ __返回__
 
 ```python
 predict_on_batch(x)
-
 ```
 
 返回一批样本的模型预测值。
@@ -552,8 +577,6 @@ __返回__
 
 ```python
 fit_generator(generator, steps_per_epoch=None, epochs=1, verbose=1, callbacks=None, validation_data=None, validation_steps=None, class_weight=None, max_queue_size=10, workers=1, use_multiprocessing=False, shuffle=True, initial_epoch=0)
-
-
 ```
 
 使用 Python 生成器或 `Sequence` 实例逐批生成的数据，按批次训练模型。
@@ -562,6 +585,14 @@ fit_generator(generator, steps_per_epoch=None, epochs=1, verbose=1, callbacks=No
 例如，这可以让你在 CPU 上对图像进行实时数据增强，以在 GPU 上训练模型。
 
 `keras.utils.Sequence` 的使用可以保证数据的顺序， 以及当 `use_multiprocessing=True` 时 ，保证每个输入在每个 epoch 只使用一次。
+
+update:
+
+```python
+fit_generator(generator, steps_per_epoch=None, epochs=1, verbose=1, callbacks=None, validation_data=None, validation_steps=None, validation_freq=1, class_weight=None, max_queue_size=10, workers=1, use_multiprocessing=False, shuffle=True, initial_epoch=0)
+```
+
+- **validation_freq**: Only relevant if validation data is provided. Integer or `collections.Container`instance (e.g. list, tuple, etc.). If an integer, specifies how many training epochs to run before a new validation run is performed, e.g. `validation_freq=2` runs validation every 2 epochs. If a Container, specifies the epochs on which to run validation, e.g. `validation_freq=[1, 2, 10]`runs validation at the end of the 1st, 2nd, and 10th epochs.
 
 __参数__
 
@@ -691,13 +722,18 @@ if __name__ == '__main__':
 
 ```python
 evaluate_generator(generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-
-
 ```
 
 在数据生成器上评估模型。
 
 这个生成器应该返回与 `test_on_batch` 所接收的同样的数据。
+
+```python
+evaluate_generator(generator, steps=None, callbacks=None, max_queue_size=10, 
+workers=1, use_multiprocessing=False, verbose=0)
+```
+
+- **callbacks**: List of `keras.callbacks.Callback` instances. List of callbacks to apply during training. See [callbacks](https://keras.io/callbacks).
 
 __参数__
 
@@ -726,12 +762,20 @@ __异常__
 
 ```python
 predict_generator(generator, steps=None, max_queue_size=10, workers=1, use_multiprocessing=False, verbose=0)
-
 ```
 
 为来自数据生成器的输入样本生成预测。
 
 这个生成器应该返回与 `predict_on_batch` 所接收的同样的数据。
+
+update:
+
+```python
+predict_generator(generator, steps=None, callbacks=None, max_queue_size=10, 
+workers=1, use_multiprocessing=False, verbose=0)
+```
+
+- **callbacks**: List of `keras.callbacks.Callback` instances. List of callbacks to apply during training. See [callbacks](https://keras.io/callbacks).
 
 __参数__
 
@@ -758,8 +802,6 @@ __异常__
 
 ```python
 get_layer(name=None, index=None)
-
-
 ```
 
 根据名称（唯一）或索引值查找网络层。
@@ -1416,7 +1458,6 @@ __异常__
 
 ```python
 fit(x=None, y=None, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.0, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0, steps_per_epoch=None, validation_steps=None)
-
 ```
 
 以给定数量的轮次（数据集上的迭代）训练模型。
@@ -1457,6 +1498,7 @@ __参数__
 - __steps_per_epoch__: 整数或 `None`。
   在声明一个轮次完成并开始下一个轮次之前的总步数（样品批次）。
   使用 TensorFlow 数据张量等输入张量进行训练时，默认值 `None` 等于数据集中样本的数量除以 batch 的大小，如果无法确定，则为 1。
+  - If steps_per_epoch is set, the `batch_size` must be None.
 - __validation_steps__: 只有在指定了 `steps_per_epoch` 时才有用。停止前要验证的总步数（批次样本）。
 
 __返回__
