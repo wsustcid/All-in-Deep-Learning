@@ -1104,8 +1104,6 @@ model.fit(x_train, y_train,
 
 
 
-
-
 # Keras 函数式 API
 
 Keras 函数式 API 是定义复杂模型（如多输出模型、有向无环图，或具有共享层的模型）的方法。
@@ -2007,5 +2005,242 @@ merged = keras.layers.concatenate([encoded_video, encoded_video_question])
 output = Dense(1000, activation='softmax')(merged)
 video_qa_model = Model(inputs=[video_input, video_question_input], outputs=output)
 
+```
+
+
+
+
+
+# 使用多GPU加速训练
+
+## 构建多GPU模型
+
+### keras中的multi_gpu_model
+
+https://blog.csdn.net/MachineRandy/article/details/80040765
+
+```python
+keras.utils.multi_gpu_model(model, gpus=None, cpu_merge=True, cpu_relocation=False)
+```
+
+**作用：**
+
+- 将模型复制到不同的 GPU 上，具体来说，该功能实现了单机多 GPU 数据并行性。
+
+**原理：**
+
+ 下图是两个GPU进行数据并行的示意图，CPU负责梯度平均和参数更新，GPU1和GPU2训练模型副本。
+
+<img src=imgs/multi-gpu.png >
+
+具体步骤如下：
+
+- 将模型的输入分成多个子批次，并根据GPU数量定义模型副本（副本之间要能够共享变量tf.get_variable()）
+- 对于单独的GPU，分别从数据管道读取不同的数据块（子批次），然后做forward propagation来计算出loss，再计算在当前variables下的gradients
+- 把所有GPU输出的梯度数据转移到CPU上，先进行梯度取平均操作，然后进行模型参数的更新, Concatenate the results (on CPU) into one big batch.（loss求和）
+- 重复1-3，直到模型收敛
+
+**Remark：**
+
+- 例如， 如果你的 `batch_size` 是 64，且你使用 `gpus=2`，那么我们将把输入分为两个 32 个样本的子批次，
+  在 1 个 GPU 上处理 1 个子批次，然后返回完整批次的 64 个处理过的样本
+- 最多支持 8 个 GPU 的准线性加速，此功能目前仅适用于 TensorFlow 后端。
+
+
+
+**关于数据并行实现加速的理解：**
+
+- 从数据集迭代的角度：假设我们总共有100个数据，我们预计迭代10个epoch能到达最优点。如果我们只有一个GPU，单个GPU每次最多处理10个数据，那么我们总共需要迭代100次。但如果我们有两个GPU，每个GPU也是处理10个数据，那么我们把100个数据迭代10个epoch只需要50次迭代，这样就实现了线性加速；
+- 关于对同一个参数，使用不同的变量求得的梯度，取平均值后进行参数更新：我的理解是反正都是用一批数据的梯度来近似整个数据集的梯度，一次采用20个数据求的梯度和两个10个数据梯度的平均应该也差不多，毕竟你10个10个连续算相对与真实梯度也很不准，还花费了两倍的时间
+
+__参数__：
+
+- __model__: 一个 Keras 模型实例。为了避免OOM错误，该模型可以建立在 CPU 上，详见下面的使用样例。
+- __gpus__: 整数 >= 2 或整数列表，创建模型副本的 GPU 数量，或 GPU ID 的列表。
+- __cpu_merge__: 一个布尔值，用于标识是否强制合并 CPU 范围内的模型权重。
+- __cpu_relocation__: 一个布尔值，用来确定是否在 CPU 的范围内创建模型的权重。如果模型没有在任何一个设备范围内定义，您仍然可以通过激活这个选项来拯救它。
+
+__返回__：
+
+一个 Keras `Model` 实例，它可以像初始 `model` 参数一样使用，但它将工作负载分布在多个 GPU 上。
+
+__例子__：
+
+例 1 - 训练在 CPU 上合并权重的模型
+
+```python
+import tensorflow as tf
+from keras.applications import Xception
+from keras.utils import multi_gpu_model
+import numpy as np
+
+num_samples = 1000
+height = 224
+width = 224
+num_classes = 1000
+
+# 实例化基础模型（或者「模版」模型）。
+# 我们推荐在 CPU 设备范围内做此操作，
+# 这样模型的权重就会存储在 CPU 内存中。
+# 否则它们会存储在 GPU 上，与权重共享冲突。
+with tf.device('/cpu:0'):
+    model = Xception(weights=None,
+                     input_shape=(height, width, 3),
+                     classes=num_classes)
+
+# 复制模型到 8 个 GPU 上。
+# 这假设你的机器有 8 个可用 GPU。
+parallel_model = multi_gpu_model(model, gpus=8)
+parallel_model.compile(loss='categorical_crossentropy',
+                       optimizer='rmsprop')
+
+# 生成虚拟数据
+x = np.random.random((num_samples, height, width, 3))
+y = np.random.random((num_samples, num_classes))
+
+# 这个 `fit` 调用将分布在 8 个 GPU 上。
+# 由于 batch size 是 256, 每个 GPU 将处理 32 个样本。
+parallel_model.fit(x, y, epochs=20, batch_size=256)
+
+# 通过模版模型存储模型（共享相同权重）：
+model.save('my_model.h5')
+```
+
+**例 2** - 训练在 CPU 上利用 cpu_relocation 合并权重的模型
+
+```python
+..
+# 不需要更改模型定义的设备范围：
+model = Xception(weights=None, ..)
+
+try:
+    parallel_model = multi_gpu_model(model, cpu_relocation=True)
+    print("Training using multiple GPUs..")
+except ValueError:
+    parallel_model = model
+    print("Training using single GPU or CPU..")
+parallel_model.compile(..)
+..
+```
+
+例 3 - 训练在 GPU 上合并权重的模型（建议用于 NV-link）
+
+```python
+..
+# 不需要更改模型定义的设备范围：
+model = Xception(weights=None, ..)
+
+try:
+    parallel_model = multi_gpu_model(model, cpu_merge=False)
+    print("Training using multiple GPUs..")
+except:
+    parallel_model = model
+    print("Training using single GPU or CPU..")
+
+parallel_model.compile(..)
+..
+```
+
+#### __关于模型保存__
+
+要保存多 GPU 模型，请通过模板模型（传递给 `multi_gpu_model` 的参数）调用 `.save(fname)` 或 `.save_weights(fname)` 以进行存储，而不是通过 `multi_gpu_model` 返回的模型。
+
+
+
+在使用 `callbacks.ModelCheckpoint()` 并进行多 gpu 并行计算时，`callbacks` 函数会报错：
+
+```
+TypeError: can't pickle ...(different text at different situation) objects
+```
+
+这个问题在我之前的文章中也有提到：[[Keras\] 使用Keras调用多GPU，并保存模型
+ ](https://www.jianshu.com/p/d57595dac5a9)。显然，在使用检查点时，默认还是使用了 `paralleled_model.save()` ，进而导致错误。为了解决这个问题，我们需要自己定义一个召回函数。
+
+法1：
+
+```python
+original_model = ...
+parallel_model = multi_gpu_model(original_model, gpus=n)
+
+class MyCbk(keras.callbacks.Callback):
+
+    def __init__(self, model):
+         self.model_to_save = model
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.model_to_save.save('model_at_epoch_%d.h5' % epoch)
+
+cbk = MyCbk(original_model)
+parallel_model.fit(..., callbacks=[cbk])
+```
+
+法二：
+
+```python
+class ParallelModelCheckpoint(ModelCheckpoint):
+    def __init__(self,model,filepath, monitor='val_loss', verbose=0,
+                 save_best_only=False, save_weights_only=False,
+                 mode='auto', period=1):
+        self.single_model = model
+        super(ParallelModelCheckpoint,self).__init__(filepath, monitor, verbose,save_best_only, save_weights_only,mode, period)
+
+    def set_model(self, model):
+        super(ParallelModelCheckpoint,self).set_model(self.single_model)
+
+check_point = ParallelModelCheckpoint(single_model ,'best.hd5')
+```
+
+法三：
+
+```python
+class CustomModelCheckpoint(keras.callbacks.Callback):
+
+    def __init__(self, model, path):
+        self.model = model
+        self.path = path
+        self.best_loss = np.inf
+
+    def on_epoch_end(self, epoch, logs=None):
+        val_loss = logs['val_loss']
+        if val_loss < self.best_loss:
+            print("\nValidation loss decreased from {} to {}, saving model".format(self.best_loss, val_loss))
+            self.model.save_weights(self.path, overwrite=True)
+            self.best_loss = val_loss
+
+model.fit(X_train, y_train,
+              batch_size=batch_size*G, epochs=nb_epoch, verbose=0, shuffle=True,
+              validation_data=(X_valid, y_valid),
+              callbacks=[CustomModelCheckpoint(model, '/path/to/save/model.h5')])
+```
+
+详见：
+
+<https://www.jianshu.com/p/1d7977599e90>
+
+## 其他方式
+
+### 提升GPU-Util的利用率
+
+numpy在数据创建等操作中默认使用np.float64作为浮点数的数据类型，但GPU只支持32位的数据计算，将所有输入的数据类型设定为np.float32后，GPU利用率将稍微提升。
+
+<https://blog.csdn.net/qing101hua/article/details/78978791>
+
+
+
+### 显存管理
+
+```python
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+import os  
+# 指定使用的gpu 
+os.environ["CUDA_VISIBLE_DEVICES"] = '0,1'    
+
+config = tf.ConfigProto()  
+# 设定程序最多只能占用指定gpu50%的显存
+config.gpu_options.per_process_gpu_memory_fraction = 0.5   
+# or 程序按需申请内存  
+config.gpu_options.allow_growth = True      
+set_session(tf.Session(config=config))
 ```
 
