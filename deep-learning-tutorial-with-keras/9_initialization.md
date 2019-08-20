@@ -39,7 +39,7 @@ Copyright (c) 2019 Shuai Wang. All rights reserved.
 - The task is to predict the objects present. This therefore defines nine configuration classes.
 - Need to discover in- variances over rotation, translation, scaling, object color, occlusion and relative position of the shapes. In parallel we need to extract the factors of variability that predict which object shapes are present.
 
-<img src=imgs/9_1_1.png width=300 >
+.center[<img src=imgs/9_1_1.png width=300 >]
 
 ---
 
@@ -85,7 +85,7 @@ We varied the type of non-linear activation function in the hidden layers:
 
 > The sigmoid non-linearity has been already shown to slow down learning because of its none-zero mean that induces **important singular values in the Hessian** (LeCun et al., 1998b). (hessian矩阵条件数过大，会造成Zig path, Hession与神经网络参数更新关系待研究)
 
-<img src=imgs/9_1_2.png width=450 >
+.center[<img src=imgs/9_1_2.png width=450 >]
 
 - Mean and standard deviation (vertical bars) of the activation values (output of the sigmoid) during supervised learning, for the different hidden layers of a deep architecture. 
 - The top hidden layer quickly saturates at 0 (slowing down all learning), but then slowly desaturates around epoch 100.
@@ -96,13 +96,17 @@ We varied the type of non-linear activation function in the hidden layers:
 
 > As discussed above, the hyperbolic tangent networks do not suffer from the kind of saturation behavior of the top hidden layer observed with sigmoid networks, because of its symmetry around 0. ???
 
-<img src=imgs/9_1_3.png width=450 >
+.center[<img src=imgs/9_1_3.png width=450 >]
 
 - **Top:** 98 percentiles (markers alone) and standard deviation (solid lines with markers) of the distribution of the activation values for the hyperbolic tangent networks in the course of learning. We see the first hidden layer saturating first, then the second, etc. (对称？)
 
+---
+
+
+
 **3.3 Experiments with the Softsign**
 
-<img src=imgs/9_1_3_2.png width=450 >
+.center[<img src=imgs/9_1_3_2.png width=450 >]
 
 - **Bottom:** 98 percentiles (markers alone) and standard deviation (solid lines with markers) of the distribution of activation values for the soft-sign during learning. Here the different layers saturate less and **do so together**.
 
@@ -110,18 +114,20 @@ We varied the type of non-linear activation function in the hidden layers:
 
 Activation values normalized histogram at the end of learning, averaged across units of the same layer and across 300 test examples. 
 
-<img src=imgs/9_1_4.png height=300 >
+.center[<img src=imgs/9_1_4.png height=300 >]
 
 - **Top:** activation function is hyperbolic tangent, we see important saturation of the lower layers. 
 - **Bottom:** activation function is soft-sign, we see many activation values around (-0.6,-0.8) and (0.6,0.8) where the units do not saturate but are non-linear.
+
+---
 
 #### 4 Studying Gradients and their Propagation 
 
 **4.1 Effect of the Cost Function**
 
-<img src=imgs/9_1_5.png width=400 >
+.center[<img src=imgs/9_1_5.png width=400 >]
 
-- Cross entropy (black, surface on top) and quadratic (red, bottom surface) cost as a function of two weights (one at each layer) of a network with two layers, W1 respectively on the first layer and W2 on the second, output layer.
+- **Cross entropy** (black, surface on top) and **quadratic** (red, bottom surface) cost as a function of two weights (one at each layer) of a network with two layers, W1 respectively on the first layer and W2 on the second, output layer.
 - The plateaus in the training criterion (as a function of the parameters) are less present with the log-likelihood cost function.
 
 ---
@@ -133,9 +139,11 @@ Activation values normalized histogram at the end of learning, averaged across u
 
 目标：
 
-<img src=imgs/9_1_0.png width=500 >
+.center[<img src=imgs/9_1_0.png width=500 >]
 
 - $s^i$ 为第i层的状态值，$z^{i-1}$为第i-1层的激活值，用作第i层的输入；
+
+---
 
 首先：求第i层第k个神经元状态值的梯度与第i层参数矩阵第$l$行k列元素的梯度
 $$
@@ -158,6 +166,8 @@ $$
 - the weights are initialized independently （每一层所有参数w均值为0且独立同分布，且与z独立）and that the inputs features variances are the same ($= Var[x]$).
 
 (注：以上三条根据使用激活函数的不同每一条都可能不满足)
+
+---
 
 **前向：计算每一层激活值的方差，目标是初始化之后，各层激活值的方差相同**
 $$
@@ -194,7 +204,7 @@ $$
 
 - 由于定义方式不同，造成与原文对$w^i$标号不同，原文定义$i$从$0\sim d-1$,此处定义$1-d$,二者相差1，公式代表含义相同
 
-
+---
 
 From a forward-propagation point of view, to keep information flowing we would like that
 $$
@@ -213,6 +223,8 @@ As a compromise between these two constraints, we might want to have
 $$
 \forall i, Var(w^{i+1})= \frac{2}{n^i+n^{i+1}}
 $$
+---
+
 Note how both constraints are satisfied when all layers have the same width. If we also have the same initialization for the weights we could get the following interesting properties:
 $$
 \forall i, Var[\frac{\partial Cost}{\partial s^i_k}] =Var(\frac{\partial Cost}{\partial s_j^{d}}) [nVar(w)]^{d-i} \\
@@ -241,7 +253,7 @@ $$
 V(w)= \frac{1}{12}（\frac{2\sqrt{6}}{n^j+n^{j+1}}）^2=\frac{2}{n^j+n^{j+1}}
 $$
 
-
+---
 
 To empirically validate the above theoretical ideas, we have plotted some normalized histograms of activation values, weight gradients and of the back-propagated gradients at initialization with the two different initialization methods.
 
@@ -292,6 +304,8 @@ $$
 - Here $y_i$ is the input of the nonlinear activation $f$ on the $i$**th channel**, and $a_i$ is a coefficient controlling the slope of the negative part. 
 - The subscript $i$ in $a_i$ indicates that we allow the nonlinear activation to vary on different channels.
 
+---
+
 
 
 <img src=imgs/9_2_1.png width=300 >
@@ -304,7 +318,7 @@ $$
   $$
   where the coefficient is shared by all channels of one layer. This variant **only introduces a single extra parameter into each layer**
 
-
+---
 
 **Optimization:**
 
@@ -337,6 +351,8 @@ $$
   $$
   
 
+---
+
 We adopt the momentum method when updating $a_i$:
 $$
 \Delta a_i = \mu \Delta a_i + \epsilon \frac{\partial \varepsilon}{\partial a_i}
@@ -345,17 +361,19 @@ $$
 - It is worth noticing that we do not use weight decay (l2 regularization) when updating $a_i$. A weight decay tends to push $a_i$ to zero, and thus biases PReLU toward ReLU. Even without regularization, the learned coefficients rarely have a magnitude larger than 1 in our experiments. 
 - We use $a_i$ = 0.25 as the initialization throughout this paper
 
-
+---
 
 **Comparison Experiments：**
 
 Table 1. A small but deep 14-layer model [10]. The learned coefficients of PReLU are also shown. For the channel-wise case, the average of {ai} over the channels is shown for each layer.
 
-<img src=imgs/9_2_t1.png height=300 >
+.center[<img src=imgs/9_2_t1.png height=300 >]
+
+---
 
 Table 2. Comparisons between ReLU and PReLU on the small model.
 
-<img src=imgs/9_2_t2.png width=300 >
+.center[<img src=imgs/9_2_t2.png width=300 >]
 
 - First, the first conv layer (conv1) has coefficients (0.681 and 0.596) significantly greater than 0. 
   - As the filters of conv1 are mostly Gabor-like filters such as edge or texture detectors, the learned results show that **both positive and negative responses of the filters are respected**. 
@@ -363,6 +381,8 @@ Table 2. Comparisons between ReLU and PReLU on the small model.
 - Second, for the channel-wise version, **the deeper conv layers in general have smaller coefficients**. 
   - This implies that the activations gradually become “**more nonlinear**” at increasing depths. 
   - In other words, the learned model tends to **keep more information in earlier stages** and becomes **more discriminative** in deeper stages.
+
+---
 
 **2.2. Initialization of Filter Weights for Rectifier**
 
@@ -381,6 +401,8 @@ E(XY) = EXEY \\
 V(X+Y) = V(X) + V(Y) \\
 V(XY) = V(X)V(Y)+V(X)E^2Y+V(Y)E^2X
 $$
+---
+
 **Forward Propagation Case:**
 
 Our derivation mainly follows [7]. The central idea is to **investigate the variance of the responses in each layer**.
@@ -404,7 +426,9 @@ $$
   $$
    where $f$ is the activation. We also have $c_l = d_{l−1}$.
 
-<img src=imgs/9_2_0.png width=500 >
+.center[<img src=imgs/9_2_0.png width=500 >]
+
+---
 
 **Assumption:**
 
@@ -431,7 +455,7 @@ $$
 
 - It is worth noticing that $E[x^2_l ] \neq Var[x_l]$ unless $x_l$ has zero mean. For the ReLU activation, $x_l = max(0, y_{l−1})$ and thus it does not have zero mean. **This will lead to a conclusion different from [7].**
 
-
+---
 
 If we let $w_{l−1}$ have a symmetric distribution around zero and $b_{l−1} = 0$, then $y_{l−1}=\sum w_{l-1}x_{l-1}$ has zero mean and has a symmetric distribution around zero. when f is ReLU
 $$
@@ -451,6 +475,8 @@ $$
 Var(y_l) =\frac{1}{2}n_l Var(w_l)Var(y_{l-1})
 \end{align}
 $$
+---
+
 With L layers put together, we have:
 $$
 \begin{align}
@@ -469,7 +495,7 @@ Remark:
 
 - For the first layer (l = 1), we should have $n_1Var[w_1] = 1$, because there is no ReLU applied on the input signal($Var(y_1)=n_1Var(w_1)E(x_1^2)$, $x_1$代表输入层，不再是激活值，因此不再展开). But the factor 1/2 does not matter if it just exists on one layer.
 
-
+---
 
 **Backward Propagation Case：**
 
@@ -485,7 +511,7 @@ $$
 - $∆x$ is a c-by-1 vector representing the gradient **at a pixel of this layer**. 
 - 通俗解释：前向是$k^2$面积的像素，深度为c, 经过卷积操作映射到feature map上的1个像素，深度为d; 因为前向中的某一个像素，卷积后至多与feature map中 $k^2 d$个像素相关，因此反向时梯度的传播也是$k^2$面积的像素，深度为d, 传播到一个像素上，深度为c; 综上，得出$∆y$是$k^2d $x1, $∆x$是cx1; 因为卷积的权重共享，每一层只有一个W,共dxk^2c 个值，通过reshape,变为cxk^2d.具体元素对应位置可展开查看。
 
-
+---
 
 As above, we assume that $w_l$ and $∆y_l$ are independent of each other, then $∆x_l$ has zero mean for all l, when $wl$ is initialized by a symmetric distribution around zero.
 
@@ -518,6 +544,8 @@ Var(\Delta x_l)
 &=\frac{1}{2}\hat{n_l}Var(w_l)Var(\Delta x_{l+1}) \notag \\
 \end{align}
 $$
+
+---
 
 The scalar 1/2 in both Eqn.(12) and Eqn.(8) is the result of ReLU, though the derivations are different. With L layers put together, we have:
 $$
@@ -552,16 +580,5 @@ The only difference between this equation and Eqn.(10) is that $\hat{n_l} = k_l^
 实践：
 
 <https://towardsdatascience.com/why-default-cnn-are-broken-in-keras-and-how-to-fix-them-ce295e5e5f2>
-
-
-
-
-$$
-\begin{align}
-&\textbf{s}^i_{1\text{x}\text{K}} = \text{z}^{i-1}_{1\text{x}\text{L}}\text{W}^i_{L\text{x}\text{K}} + \text{b}^i_{1\text{x}\text{K}} \\
-&\text{z}^{i}_{1\text{x}\text{K}} = f(\text{s}^i) \\
-&\textbf{s}^{i+1}_{1\text{x}\text{M}} = \text{z}^{i}_{1\text{x}\text{K}}\text{W}^{i+1}_{\text{K}\text{x}\text{M}} + \text{b}^{i+1}_{1\text{x}\text{M}} 
-\end{align}
-$$
 
 
