@@ -2009,7 +2009,628 @@ video_qa_model = Model(inputs=[video_input, video_question_input], outputs=outpu
 
 
 
+# 模型保存
 
+TensorFlow的模型格式有很多种，针对不同场景可以使用不同的格式，只要符合规范的模型都可以轻易部署到在线服务或移动设备上，这里简单列举一下。
+
+- Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。
+- GraphDef：用于保存模型的Graph，不包含模型权重，加上checkpoint后就有模型上线的全部信息。
+- ExportModel：使用exportor接口导出的模型文件，包含模型Graph和权重可直接用于上线，但官方已经标记为deprecated推荐使用SavedModel。
+- **SavedModel**：使用saved_model接口导出的模型文件，包含模型Graph和权限可直接用于上线，TensorFlow和Keras模型推荐使用这种模型格式。
+- FrozenGraph：使用freeze_graph.py对checkpoint和GraphDef进行整合和优化，可以直接部署到Android、iOS等移动设备上。
+- TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS等移动设备上，使用接口和FrozenGraph有些差异。
+
+**模型格式**
+
+目前建议TensorFlow和Keras模型都导出成SavedModel格式，这样就可以直接使用通用的TensorFlow Serving服务，模型导出即可上线不需要改任何代码。
+
+不同的模型导出时只要指定输入和输出的signature即可，**其中字符串的key可以任意命名只会在客户端请求时用到**，可以参考下面的代码示例。
+
+注意，目前使用tf.py_func()的模型导出后不能直接上线，模型的所有结构建议都用op实现。
+
+**TensorFlow模型导出**
+
+```python
+import os
+import tensorflow as tf
+from tensorflow.python.saved_model import builder as saved_model_builder
+from tensorflow.python.saved_model import (
+    signature_constants, signature_def_utils, tag_constants, utils)
+from tensorflow.python.util import compat
+
+model_path = "model"
+model_version = 1
+model_signature = signature_def_utils.build_signature_def(
+    inputs={
+        "keys": utils.build_tensor_info(keys_placeholder),
+        "features": utils.build_tensor_info(inference_features)
+    },
+    outputs={
+        "keys": utils.build_tensor_info(keys_identity),
+        "prediction": utils.build_tensor_info(inference_op),
+        "softmax": utils.build_tensor_info(inference_softmax),
+    },
+    method_name=signature_constants.PREDICT_METHOD_NAME)
+
+export_path = os.path.join(compat.as_bytes(model_path), compat.as_bytes(str(model_version)))
+legacy_init_op = tf.group(tf.tables_initializer(), name='legacy_init_op')
+ 
+builder = saved_model_builder.SavedModelBuilder(export_path)
+builder.add_meta_graph_and_variables(
+    sess, [tag_constants.SERVING],
+    clear_devices=True,
+    signature_def_map={
+        signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+        model_signature,
+    },
+    legacy_init_op=legacy_init_op)
+ 
+builder.save() 
+```
+
+**Keras模型导出**
+
+```python
+import os
+import tensorflow as tf
+from tensorflow.python.util import compat
+ 
+def export_savedmodel(model):
+  model_path = "model"
+  model_version = 1
+  model_signature = tf.saved_model.signature_def_utils.predict_signature_def(
+      inputs={'input': model.input}, outputs={'output': model.output})
+  export_path = os.path.join(compat.as_bytes(model_path), compat.as_bytes(str(model_version)))
+ 
+  builder = tf.saved_model.builder.SavedModelBuilder(export_path)
+  builder.add_meta_graph_and_variables(
+      sess=K.get_session(),
+      tags=[tf.saved_model.tag_constants.SERVING],
+      clear_devices=True,
+      signature_def_map={
+          tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+          model_signature
+      })
+  builder.save()
+```
+
+**SavedModel模型结构**
+
+使用TensorFlow的API导出SavedModel模型后，可以检查模型的目录结构如下，然后就可以直接使用开源工具来加载服务了。
+
+![img](https://pic2.zhimg.com/80/v2-f6acd33963b0691f725b942d5567f159_hd.jpg)
+
+------
+
+## 模型上线
+
+**部署在线服务**
+
+使用HTTP接口可参考 [tobegit3hub/simple_tensorflow_serving](https://link.zhihu.com/?target=https%3A//github.com/tobegit3hub/simple_tensorflow_serving) 。
+
+使用gRPC接口可参考 [tensorflow/serving](https://link.zhihu.com/?target=https%3A//github.com/tensorflow/serving) 。
+
+**部署离线设备**
+
+部署到Android可参考 [https://medium.com/@tobe_ml/all-tensorflow-models-can-be-embedded-into-mobile-devices-1932e80579e5](https://link.zhihu.com/?target=https%3A//medium.com/%40tobe_ml/all-tensorflow-models-can-be-embedded-into-mobile-devices-1932e80579e5) 。
+
+部署到iOS可参考 <https://zhuanlan.zhihu.com/p/33715219> 。
+
+
+
+### keras 模型部署 tensorflow serving
+
+这两天算法同事那边用keras训练了个二分类的模型。有一个新的需求是把keras模型跑到 tensorflow serving上 （TensorFlow Serving 系统用于在生产环境中运行模型）。
+
+在这之前我并没有接触过keras、tensorflow ， 官方教程和一堆的博客论坛资料有些过时，（keras 模型转 tensorflow 模型的示例代码跑不动），过程不太顺利，于是花了一天学习 keras、 tensorlow, 写个小demo，再追踪一下keras和tensorflow源代码，耗时两天终于把这个需求实现了。这里记录填坑过程。
+
+#### keras模型转 tensorflow模型
+
+我把 keras模型转tensorflow serving模型所使用的方法如下：
+
+**1、要拿到算法训练好的keras模型文件（一个HDF5文件）**
+
+该文件应该包含：
+
+- 模型的结构，以便重构该模型
+- 模型的权重
+- 训练配置（损失函数，优化器等）
+- 优化器的状态，以便于从上次训练中断的地方开始
+
+**2、编写 keras模型转tensorflow serving模型的代码**
+
+```python
+import tensorflow as tf
+from keras import backend as K
+from keras.models import Sequential, Model
+from os.path import isfile
+
+def build_model():
+    model = Sequential()
+    # 省略这部分代码，根据算法实际情况填写
+    return model
+# 保存keras模型为pb模型
+def save_model_to_serving(model, export_version, export_path='prod_models'):
+    print(model.input, model.output)
+    signature = tf.saved_model.signature_def_utils.predict_signature_def(                                                                        
+        inputs={'voice': model.input}, outputs={'scores': model.output})
+    
+    export_path = os.path.join(
+        tf.compat.as_bytes(export_path),
+        tf.compat.as_bytes(str(export_version)))
+    
+    builder = tf.saved_model.builder.SavedModelBuilder(export_path)
+    legacy_init_op = tf.group(tf.tables_initializer(), name='legacy_init_op')
+    builder.add_meta_graph_and_variables(
+        sess=K.get_session(),                                                                                                                    
+        tags=[tf.saved_model.tag_constants.SERVING],                                                                                             
+        signature_def_map={                                                                                                                      
+            'voice_classification': signature,                                                                                                                     
+        },
+        legacy_init_op=legacy_init_op)
+    builder.save()
+
+if __name__ == '__main__':
+    # 1.构建模型
+    model = build_model()
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='xxx', # 用实际算法情况替换这里的xxx
+                  metrics=['xxx'])
+    model.summary()
+    
+    # 2. 导入模型权重
+    checkpoint_filepath = 'weights.hdf5'
+    if (isfile(checkpoint_filepath)):
+        print('Checkpoint file detected. Loading weights.')
+        model.load_weights(checkpoint_filepath) # 加载模型
+    else:
+        print('No checkpoint file detected.  Starting from scratch.')
+    # 3. 保存为pb模型
+    export_path = "test_model"
+    save_model_to_serving(model, "1", export_path)
+```
+
+上面的例子将模型保存到 test_model目录下
+test_model目录结构如下：
+
+```python
+test_model/
+└── 1
+    ├── saved_model.pb
+    └── variables
+        ├── variables.data-00000-of-00001
+        └── variables.index
+```
+
+saved_model.pb 是能在 tensorflow serving跑起来的模型。
+
+**3、跑模型**
+
+```python
+tensorflow_model_server --port=8500 --model_name="voice" --model_base_path="/home/yu/workspace/test/test_model/"
+```
+
+标准输出如下（算法模型已成功跑起来了）：
+
+```python
+2018-02-08 16:28:02.641662: I tensorflow_serving/model_servers/main.cc:149] Building single TensorFlow model file config:  model_name: voice model_base_path: /home/yu/workspace/test/test_model/
+2018-02-08 16:28:02.641917: I tensorflow_serving/model_servers/server_core.cc:439] Adding/updating models.
+2018-02-08 16:28:02.641976: I tensorflow_serving/model_servers/server_core.cc:490]  (Re-)adding model: voice
+2018-02-08 16:28:02.742740: I tensorflow_serving/core/basic_manager.cc:705] Successfully reserved resources to load servable {name: voice version: 1}
+2018-02-08 16:28:02.742800: I tensorflow_serving/core/loader_harness.cc:66] Approving load for servable version {name: voice version: 1}
+2018-02-08 16:28:02.742815: I tensorflow_serving/core/loader_harness.cc:74] Loading servable version {name: voice version: 1}
+2018-02-08 16:28:02.742867: I external/org_tensorflow/tensorflow/contrib/session_bundle/bundle_shim.cc:360] Attempting to load native SavedModelBundle in bundle-shim from: /home/yu/workspace/test/test_model/1
+2018-02-08 16:28:02.742906: I external/org_tensorflow/tensorflow/cc/saved_model/loader.cc:236] Loading SavedModel from: /home/yu/workspace/test/test_model/1
+2018-02-08 16:28:02.755299: I external/org_tensorflow/tensorflow/core/platform/cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2018-02-08 16:28:02.795329: I external/org_tensorflow/tensorflow/cc/saved_model/loader.cc:155] Restoring SavedModel bundle.
+2018-02-08 16:28:02.820146: I external/org_tensorflow/tensorflow/cc/saved_model/loader.cc:190] Running LegacyInitOp on SavedModel bundle.
+2018-02-08 16:28:02.832832: I external/org_tensorflow/tensorflow/cc/saved_model/loader.cc:284] Loading SavedModel: success. Took 89481 microseconds.
+2018-02-08 16:28:02.834804: I tensorflow_serving/core/loader_harness.cc:86] Successfully loaded servable version {name: voice version: 1}
+2018-02-08 16:28:02.836855: I tensorflow_serving/model_servers/main.cc:290] Running ModelServer at 0.0.0.0:8500 ...
+```
+
+**4、客户端代码**
+
+```python
+from __future__ import print_function
+from grpc.beta import implementations
+import tensorflow as tf
+
+from tensorflow_serving.apis import predict_pb2
+from tensorflow_serving.apis import prediction_service_pb2
+import numpy as np
+
+tf.app.flags.DEFINE_string('server', 'localhost:8500',
+                           'PredictionService host:port')
+tf.app.flags.DEFINE_string('vocie', '', 'path to voice in wav format')
+FLAGS = tf.app.flags.FLAGS
+
+def get_melgram(path):
+    melgram = .... # 这里省略
+    return melgram
+
+def main(_):
+    host, port = FLAGS.server.split(':')
+    channel = implementations.insecure_channel(host, int(port))
+    stub = prediction_service_pb2.beta_create_PredictionService_stub(channel)
+    # Send request
+
+    # See prediction_service.proto for gRPC request/response details.
+    data = get_melgram("T_1000001.wav")
+    data = data.astype(np.float32)
+
+    request = predict_pb2.PredictRequest()
+    request.model_spec.name = 'voice' # 这个name跟tensorflow_model_server  --model_name="voice" 对应
+    request.model_spec.signature_name = 'voice_classification' # 这个signature_name  跟signature_def_map 对应
+    request.inputs['voice'].CopyFrom(
+          tf.contrib.util.make_tensor_proto(data, shape=[1, 1, 96, 89])) # shape跟 keras的model.input类型对应
+    result = stub.Predict(request, 10.0)  # 10 secs timeout
+    print(result)
+
+
+if __name__ == '__main__':
+  tf.app.run()
+```
+
+客户端跑出的结果是：
+
+```python
+outputs {
+  key: "scores"
+  value {
+    dtype: DT_FLOAT
+    tensor_shape {
+      dim {
+        size: 1
+      }
+      dim {
+        size: 2
+      }
+    }
+    float_val: 0.0341101661325
+    float_val: 0.965889811516
+  }
+}
+```
+
+`float_val: 0.0341101661325`和`float_val: 0.965889811516`就是我们需要的结果。
+
+#### keras模型转 tensorflow模型的一些说明
+
+1、 keras 保存模型
+
+可以使用`model.save(filepath)`将Keras模型和权重保存在一个HDF5文件中，该文件将包含：
+
+- 模型的结构，以便重构该模型
+- 模型的权重
+- 训练配置（损失函数，优化器等）
+- 优化器的状态，以便于从上次训练中断的地方开始
+
+当然这个 HDF5 也可以是用下面的代码生成
+
+```python
+from keras.callbacks import ModelCheckpoint
+
+checkpoint_filepath = 'weights.hdf5'
+checkpointer = ModelCheckpoint(filepath=checkpoint_filepath, verbose=1, save_best_only=True)
+```
+
+2、 keras 加载模型
+
+keras 加载模型像下面这样子(中间部分代码省略了)：
+
+```python
+from keras.models import Sequential, Model
+
+model = Sequential()
+.....
+model.compile(loss='categorical_crossentropy',
+       optimizer='xxx', # 用实际算法情况替换这里的xxx
+       metrics=['xxx'])
+model.summary()
+model.load_weights("xxx.h5") # 加载keras模型(一个HDF5文件)
+```
+
+Remark:
+
+1：过时的生成方法
+
+有些方法已经过时了（例如下面这种）:
+
+```python
+from tensorflow_serving.session_bundle import exportefrom tensorflow_serving.session_bundle import e expxporotetr
+
+export_path = ... # where to save the exported graph
+export_version = ... # version number (integer)
+
+saver = tf.train.Saver(sharded=True)
+model_exporter = exporter.Exporter(saver)
+signature = exporter.classification_signature(input_tensor=model.input,
+                                              scores_tensor=model.output)
+model_exporter.init(sess.graph.as_graph_def(),
+                    default_graph_signature=signature)
+model_exporter.export(export_path, tf.constant(export_version), sess)
+```
+
+如果使用这种过时的方法，用tensorflow serving 跑模型的时候会提示：
+
+```python
+WARNING:tensorflow:From test.py:107: Exporter.export (from tensorflow.contrib.session_bundle.exporter) is deprecated and will be removed after 2017-06-30.
+Instructions for updating:
+No longer supported. Switch to SavedModel immediately.
+```
+
+从warning中 显然可以知道这种方法要被抛弃了，不再支持这种方法了， 建议我们转用 SaveModel方法。
+
+填坑大法： 使用 SaveModel
+
+```python
+def save_model_to_serving(model, export_version, export_path='prod_models'):
+    print(model.input, model.output)
+    signature = tf.saved_model.signature_def_utils.predict_signature_def(                                                                        
+        inputs={'voice': model.input}, outputs={'scores': model.output})
+    export_path = os.path.join(
+        tf.compat.as_bytes(export_path),
+        tf.compat.as_bytes(str(export_version)))
+    builder = tf.saved_model.builder.SavedModelBuilder(export_path)
+    legacy_init_op = tf.group(tf.tables_initializer(), name='legacy_init_op')
+    builder.add_meta_graph_and_variables(
+        sess=K.get_session(),                                                                                                                    
+        tags=[tf.saved_model.tag_constants.SERVING],                                                                                             
+        signature_def_map={                                                                                                                      
+            'classification': signature,                                                                                                                     
+        },
+        legacy_init_op=legacy_init_op)
+    builder.save()
+```
+
+
+
+## 保存tensorflow模型为pb文件
+
+通常训练模型的时候是保存ckpt方便接着训练，但是上线可以保存为pb模型，加载的时候不需要重新定义模型，只用输入输出来调用模型。
+
+```python
+'''
+@Description:  
+@Author: Shuai Wang
+@Github: https://github.com/wsustcid
+@Date: 2019-08-25 10:18:46
+@LastEditTime: 2019-08-25 10:50:04
+'''
+# -*- coding: utf-8 -*-
+
+import os
+import tensorflow as tf
+from tensorflow.python.saved_model import builder as saved_model_builder
+from tensorflow.python.saved_model import (signature_constants, signature_def_utils, tag_constants, utils)
+
+tf.app.flags.DEFINE_string('mode', 'train', 'train or test')
+
+FLAGS = tf.app.flags.FLAGS
+
+class model():
+    def __init__(self):
+        self.a = tf.placeholder(tf.float32, [None])
+        self.w = tf.Variable(tf.constant(2.0, shape=[1]), name="w")
+        b = tf.Variable(tf.constant(0.5, shape=[1]), name="b")
+        self.y = self.a * self.w + b
+
+#模型保存为ckpt
+def save_model():
+    graph1 = tf.Graph()
+    with graph1.as_default():
+        m = model()
+    with tf.Session(graph=graph1) as session:
+        session.run(tf.global_variables_initializer())
+        update = tf.assign(m.w, [10])
+        session.run(update)
+        predict_y = session.run(m.y,feed_dict={m.a:[3.0]})
+        print(predict_y)
+
+        saver = tf.train.Saver()
+        saver.save(session,"model_pb/model.ckpt")
+
+
+#保存为pb模型
+def export_model(session, m):
+
+
+   #只需要修改这一段，定义输入输出，其他保持默认即可
+   # 定义模型输入输出名
+    model_signature = signature_def_utils.build_signature_def(
+        inputs={"input": utils.build_tensor_info(m.a)},
+        outputs={
+            "output": utils.build_tensor_info(m.y)},
+
+        method_name=signature_constants.PREDICT_METHOD_NAME)
+    
+    # 定义模型保存路径
+    export_path = "pb_model/1"
+    if os.path.exists(export_path):
+        os.system("rm -rf "+ export_path)
+    print("Export the model to {}".format(export_path))
+    
+    # 模型保存
+    try:
+        legacy_init_op = tf.group(
+            tf.tables_initializer(), name='legacy_init_op')
+        builder = saved_model_builder.SavedModelBuilder(export_path)
+        builder.add_meta_graph_and_variables(
+            session, [tag_constants.SERVING],
+            clear_devices=True,
+            signature_def_map={
+                signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+                    model_signature,
+            },
+            legacy_init_op=legacy_init_op)
+
+        builder.save()
+    except Exception as e:
+        print("Fail to export saved model, exception: {}".format(e))
+
+##加载pb模型
+def load_pb():
+    # 导入pb模型
+    session = tf.Session(graph=tf.Graph())
+    model_file_path = "pb_model/1"
+    meta_graph = tf.saved_model.loader.load(session, [tf.saved_model.tag_constants.SERVING], model_file_path)
+    
+    # 导出模型输出名（保存pb模型时定义的）
+    model_graph_signature = list(meta_graph.signature_def.items())[0][1]
+    output_tensor_names = [] # tensor_name 是模型定义是给tensor起的别名（未指定时会tensorflow会自动定义）
+    # 测试pb模型时只需要用到tensor名
+    # 但op_name 与tensor_name 是相关的，也可以通过op_name 得到tensor_name
+    #output_op_names = [] # op_name 是在模型保存pb模型时model_signature中名称
+    for output_item in model_graph_signature.outputs.items():
+        #output_op_name = output_item[0] 
+        #output_op_names.append(output_op_name)
+        output_tensor_name = output_item[1].name
+        output_tensor_names.append(output_tensor_name)
+    #print("output_tensor_names: {}; output_op_names: {}".format(output_tensor_names, output_op_names))
+    print("load model finish!")
+    
+    
+    sentences = {} # 测试数据
+    ## 测试pb模型
+    # 模型输入名要与保存pb模型时定义的保持一致
+    for test_x in [[1],[2],[3],[4],[5]]:
+        sentences["input"] = test_x # key值与保存pb模型时定义保持一致
+        feed_dict_map = {}
+        for input_item in model_graph_signature.inputs.items():
+            #input_op_name = input_item[0]
+            input_tensor_name = input_item[1].name
+            #print("input_tensor_name: {}; input_op_name: {}".format(input_tensor_name, input_op_name))
+            #feed_dict_map[input_tensor_name] = sentences['input_op_name']
+            feed_dict_map[input_tensor_name] = test_x
+            
+        predict_y = session.run(output_tensor_names, feed_dict=feed_dict_map)
+        
+        print("predict pb y:",predict_y)
+
+def main(argv=None):
+    
+    if FLAGS.mode == 'train':
+        # 1. 训练时保存模型权重
+        save_model()
+    
+        # 2. 定义模型并恢复模型权重
+        graph2 = tf.Graph()
+        with graph2.as_default():
+            m = model()
+            saver = tf.train.Saver()
+        with tf.Session(graph=graph2) as session:
+            saver.restore(session, "model_pb/model.ckpt") #加载ckpt模型
+            # 3. 保存为pb模型
+            export_model(session, m)
+    
+    elif FLAGS.mode == 'test':
+        # 3. 导入pb模型并测试
+        load_pb()
+    else:
+        print("ERROR")
+    
+if __name__ == "__main__":
+    tf.app.run()
+    
+
+```
+
+save_model 和load_pb两个函数要分开执行，第一次注释掉load_pb，只save，第二次load的时候注释掉save。因为声明模型的时候都是用默认图，变量命名会依次是0,1，load的时候名字对应不上。
+
+保存好的pb模型路径文件格式为
+
+
+
+![img](https://upload-images.jianshu.io/upload_images/13198972-fe62cd7917238b87.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/293/format/webp)
+
+测试输出：
+
+```python
+output_tensor_names: ['add:0']; output_op_names: ['output']
+load model finish!
+input_tensor_name: Placeholder:0; input_op_name: input
+predict pb y: [array([10.5], dtype=float32)]
+input_tensor_name: Placeholder:0; input_op_name: input
+predict pb y: [array([20.5], dtype=float32)]
+input_tensor_name: Placeholder:0; input_op_name: input
+predict pb y: [array([30.5], dtype=float32)]
+input_tensor_name: Placeholder:0; input_op_name: input
+predict pb y: [array([40.5], dtype=float32)]
+input_tensor_name: Placeholder:0; input_op_name: input
+predict pb y: [array([50.5], dtype=float32)]
+
+```
+
+
+
+
+
+还有一种保存pb模型的方法，保存的东西只有model.pb没有variables。
+
+```python
+#保存为pb模型，只有model.pb 没有variables
+def export_model_one(session, m, graph):
+
+    output_names = [m.y.op.name] # 定义模型输出
+
+    input_graph_def = graph.as_graph_def()
+    print(m.y.op.name, m.a.op.name)
+    output_graph_def = convert_variables_to_constants(session, input_graph_def, output_names)
+    output_graph = 'pb_model/model.pb'  # 保存地址
+    with tf.gfile.GFile(output_graph, 'wb') as f:
+        f.write(output_graph_def.SerializeToString())
+
+#加载pb模型, 只有model.pb 没有variables
+def load_pb_one():
+    graph = tf.Graph()
+    with graph.as_default():
+        output_graph_def = tf.GraphDef()
+
+        with open( 'pb_model/model.pb' , "rb") as f:
+            output_graph_def.ParseFromString(f.read())
+            tensors = tf.import_graph_def(output_graph_def, name="")
+        sess = tf.Session()
+        init = tf.global_variables_initializer()
+        sess.run(init)
+
+        input = sess.graph.get_tensor_by_name("Placeholder:0")
+        output = sess.graph.get_tensor_by_name("add:0")
+
+        # 测试pb模型
+        for test_x in [[1], [2], [3], [4], [5]]:
+            predict_y = sess.run(output, feed_dict={input: test_x})
+            print("predict pb y:", predict_y)
+```
+
+如果需要发布模型成服务，请看：
+
+<https://www.jianshu.com/p/d673c9507988>
+
+<https://www.jianshu.com/p/5b74f1bc0178>
+
+
+
+先看Learning TensorFlow A GUIDE TO BUILDING DEEP LEARNING SYSTEMS
+
+书中的最后一章，完善概念理解
+
+其他相关资料：
+
+TensorFlow 模型保存与恢复 - 简书
+https://www.jianshu.com/p/c9fd5c01715e
+
+TensorFlow 保存模型为 PB 文件 - 知乎
+https://zhuanlan.zhihu.com/p/32887066
+
+(4条消息)Tensorflow-pb保存与导入 - wc781708249的博客 - CSDN博客
+https://blog.csdn.net/wc781708249/article/details/78043099
+
+(4条消息)将tensorflow网络模型（图+权值）保存为.pb文件，并从.pb文件中还原网络模型 - 妙猪的专栏 - CSDN博客
+https://blog.csdn.net/guvcolie/article/details/77478973
+
+Saving and Loading a TensorFlow model using the SavedModel API
+https://medium.com/@jsflo.dev/saving-and-loading-a-tensorflow-model-using-the-savedmodel-api-17645576527
 
 # 使用多GPU加速训练
 
@@ -2216,6 +2837,24 @@ model.fit(X_train, y_train,
 详见：
 
 <https://www.jianshu.com/p/1d7977599e90>
+
+runtimeerror you must compile your model before using it. keras - Google Search
+https://www.google.com/search?newwindow=1&safe=active&ei=oglSXc6OFYH8wQOltprQBA&q=runtimeerror+you+must+compile+your+model+before+using+it.+keras&oq=RuntimeError%3A+You+must+compile+your+model+before+using+it&gs_l=psy-ab.1.2.35i39j0l2.62006.94348..96401...5.0..0.180.830.0j6......0....1..gws-wiz.......0i71j0i22i30j33i299.O-eGCnG6Vl0
+
+ParallelModelCheckpoint keras - Google Search
+https://www.google.com/search?sourceid=chrome&ie=UTF-8&q=ParallelModelCheckpoint+keras
+
+(3条消息)[Keras] 使用多 gpu 并行训练并使用 ModelCheckpoint() 可能遇到的问题 - DexterLei - CSDN博客
+https://blog.csdn.net/u012862372/article/details/80367607
+
+ModelCheckpoint callback with multi_gpu fails to save the model, throws error after 1st epoch · Issue #8764 · keras-team/keras
+https://github.com/keras-team/keras/issues/8764
+
+call_back_error when using multi_gpu_model · Issue #10218 · keras-team/keras
+https://github.com/keras-team/keras/issues/10218
+
+Multi_gpu in keras not working with callbacks, but works fine if callback is removed · Issue #8649 · keras-team/keras
+https://github.com/keras-team/keras/issues/8649
 
 ## 其他方式
 
