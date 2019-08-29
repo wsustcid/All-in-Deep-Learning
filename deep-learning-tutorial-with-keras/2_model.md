@@ -2632,6 +2632,24 @@ https://blog.csdn.net/guvcolie/article/details/77478973
 Saving and Loading a TensorFlow model using the SavedModel API
 https://medium.com/@jsflo.dev/saving-and-loading-a-tensorflow-model-using-the-savedmodel-api-17645576527
 
+
+
+# 模型融合
+
+模型融合 - Google 搜索
+https://www.google.com/search?sourceid=chrome&ie=UTF-8&q=%E6%A8%A1%E5%9E%8B%E8%9E%8D%E5%90%88
+
+(5条消息)机器学习模型优化之模型融合 - yeal - CSDN博客
+https://blog.csdn.net/u014248127/article/details/78993753
+
+模型融合：kaggle比赛胜出的杀手锏 - 知乎
+https://zhuanlan.zhihu.com/p/40131797
+
+【机器学习】模型融合方法概述 - 知乎
+https://zhuanlan.zhihu.com/p/25836678
+
+
+
 # 使用多GPU加速训练
 
 ## 构建多GPU模型
