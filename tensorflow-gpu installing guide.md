@@ -52,9 +52,12 @@ CUDA  3.0: 195.36.15
 
 .bashrc 文件中注释掉关于ros环境变量的source 语句
 
-
+注意：
+安装时不能激活conda等虚拟环境，否则nvidia-smi无法检测到
 
 ### 相关资源：
+标准教程:https://gist.github.com/wangruohui/df039f0dc434d6486f5d4d098aa52d07
+https://blog.csdn.net/wf19930209/article/details/81877822
 
 1. https://blog.csdn.net/X_kh_2001/article/details/81147073
 2. https://blog.csdn.net/fdqw_sph/article/details/78745375
