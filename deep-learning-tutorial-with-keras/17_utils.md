@@ -59,58 +59,6 @@ __返回__
 
 一个类似于数组的 HDF5 数据集。
 
-----
-
-<span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/utils/data_utils.py#L302)</span>
-### Sequence
-
-```python
-keras.utils.Sequence()
-```
-
-用于拟合数据序列的基对象，例如一个数据集。
-
-每一个 `Sequence` 必须实现 `__getitem__` 和 `__len__` 方法。
-如果你想在迭代之间修改你的数据集，你可以实现 `on_epoch_end`。
-`__getitem__` 方法应该范围一个完整的批次。
-
-__注意__
-
-`Sequence` 是进行多进程处理的更安全的方法。这种结构保证网络在每个时期每个样本只训练一次，这与生成器不同。
-
-<https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly>
-
-__例子__
-
-
-```python
-from skimage.io import imread
-from skimage.transform import resize
-import numpy as np
-
-# 这里，`x_set` 是图像的路径列表
-# 以及 `y_set` 是对应的类别
-
-class CIFAR10Sequence(Sequence):
-
-    def __init__(self, x_set, y_set, batch_size):
-        self.x, self.y = x_set, y_set
-        self.batch_size = batch_size
-
-    def __len__(self):
-        return int(np.ceil(len(self.x) / float(self.batch_size)))
-
-    def __getitem__(self, idx):
-        batch_x = self.x[idx * self.batch_size:(idx + 1) * self.batch_size]
-        batch_y = self.y[idx * self.batch_size:(idx + 1) * self.batch_size]
-
-        return np.array([
-            resize(imread(file_name), (200, 200))
-               for file_name in batch_x]), np.array(batch_y)
-```
-
-----
-
 ### to_categorical
 
 

@@ -754,7 +754,7 @@ def dense_block(x, stage, nb_layers, nb_filter, growth_rate, dropout_rate=None, 
 
 ---
 
-
+<https://medium.com/@CinnamonAITaiwan/cnn模型-resnet-mobilenet-densenet-shufflenet-efficientnet-5eba5c8df7e4> 补充更新！！！
 
 ## 2. 模型详解
 

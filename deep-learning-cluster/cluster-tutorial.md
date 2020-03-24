@@ -346,6 +346,7 @@ sudo -l
 /usr/bin/docker ps*
 /usr/bin/docker inspect*
 /usr/bin/nvidia-docker run --rm -u [17]*
+# 重新进入已打开的容器
 /usr/bin/docker attach *
 /usr/bin/docker start *
 /usr/bin/nvidia-docker attach *
@@ -590,7 +591,95 @@ qsub myjob.pbs
   ENV  LD_LIBRARY_PATH=/usr/local/cuda8-cudnn5/lib64:$LD_LIBRARY_PATH  CUDNN_VERSION=5.0
   ```
 
-## 6. 
+bit:5000/deep_9
+
+```
+absl-py          0.2.2                 
+astor            0.6.2                 
+backcall         0.1.0                 
+bleach           1.5.0                 
+certifi          2018.4.16             
+chainer          4.0.0                 
+chardet          3.0.4                 
+cntk-gpu         2.5.1                 
+cupy             4.0.0                 
+cycler           0.10.0                
+Cython           0.28.2                
+decorator        4.3.0                 
+dm-sonnet        1.20                  
+fastrlock        0.3                   
+filelock         3.0.4                 
+future           0.16.0                
+gast             0.2.0                 
+graphviz         0.8.3                 
+grpcio           1.12.0                
+h5py             2.7.1                 
+html5lib         0.9999999             
+idna             2.6                   
+ipython          6.4.0                 
+ipython-genutils 0.2.0                 
+jedi             0.12.0                
+Keras            2.1.6                 
+kiwisolver       1.0.1                 
+Lasagne          0.2.dev1              
+leveldb          0.194                 
+Mako             1.0.7                 
+Markdown         2.6.11                
+MarkupSafe       1.0                   
+matplotlib       2.2.2                 
+mxnet-cu90       1.2.0                 
+networkx         2.1                   
+nose             1.3.7                 
+numpy            1.14.3                
+pandas           0.23.0                
+parso            0.2.1                 
+pexpect          4.5.0                 
+pickleshare      0.7.4                 
+Pillow           5.1.0                 
+pip              10.0.1                
+prompt-toolkit   1.0.15                
+protobuf         3.5.2.post1           
+ptyprocess       0.5.2                 
+pycurl           7.43.0                
+Pygments         2.2.0                 
+pygobject        3.20.0                
+pygpu            0.7.6                 
+pyparsing        2.2.0                 
+python-apt       1.1.0b1+ubuntu0.16.4.1
+python-dateutil  2.7.3                 
+python-gflags    3.1.2                 
+pytz             2018.4                
+PyWavelets       0.5.2                 
+PyYAML           3.12                  
+requests         2.18.4                
+scikit-image     0.13.1                
+scikit-learn     0.19.1                
+scipy            1.1.0                 
+setuptools       39.2.0                
+simplegeneric    0.8.1                 
+six              1.11.0                
+tensorboard      1.8.0                 
+tensorflow-gpu   1.8.0                 
+termcolor        1.1.0                 
+Theano           1.0.1                 
+torch            0.4.0                 
+torchvision      0.2.1                 
+traitlets        4.3.2                 
+urllib3          1.22                  
+wcwidth          0.1.7                 
+Werkzeug         0.14.1                
+wheel            0.31.1   
+```
+
+```
+pip install keras_applications==1.0.7 --no-deps
+pip install keras_preprocessing==1.0.9 --no-deps
+pip install h5py==2.9.0
+```
+
+
+
+
 
 安装putty
 

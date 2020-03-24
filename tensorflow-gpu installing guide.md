@@ -64,6 +64,10 @@ CUDA  3.0: 195.36.15
 
 ## 1.2 Install NVIDIA drives
 
+### Windows
+
+<https://blog.csdn.net/qq_37296487/article/details/83028394>
+
 - 禁用nouveau驱动
 
 ```

@@ -1,4 +1,4 @@
-# Keras 核心网络层
+# Core Layers
 
 所有 Keras 网络层都有很多共同的函数：
 
@@ -652,6 +652,48 @@ __输出尺寸__
 3D 张量，尺寸为 `(batch_size, new_steps, filters)`。
 由于填充或窗口按步长滑动，`steps` 值可能已更改。
 
+
+
+In Conv1D, **kernel** slides along one dimension. Now let’s pause the blog here and think which type of data requires kernel sliding in only one dimension and have spatial properties?
+
+The answer is Time-Series data. Let’s look at the following data.
+
+<img src=imgs/3_conv1d_1.png height=300px>
+
+
+
+Time series data from an accelerometer
+
+This data is collected from an **accelerometer** which a person is wearing on his arm. Data represent the acceleration in all the 3 axes. 1D CNN can perform activity recognition task from accelerometer data, such as if the person is standing, walking, jumping etc. This data has 2 dimensions. The first dimension is time-steps and other is the values of the acceleration in 3 axes.
+
+Following plot illustrate how the kernel will move on accelerometer data. Each row represents time series acceleration for some axis. The kernel can only move in one dimension along the axis of time.
+
+![img](imgs/3_conv1d_2.png)
+
+
+
+Kernel sliding over accelerometer data
+
+Following is the code to add a **Conv1D** layer in keras.
+
+```python
+import keras
+
+from keras.layers import Conv1D
+
+model = keras.models.Sequential()
+
+model.add(Conv1D(1, kernel_size=5, input_shape = (120, 3)))
+
+model.summary()
+```
+
+
+
+Argument **input_shape** (120, 3), represents 120 time-steps with 3 data points in each time step. These 3 data points are acceleration for x, y and z axes. Argument **kernel_size** is 5, representing the width of the kernel, and kernel height will be the same as the number of data points in each time step.
+
+
+
 ------
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/convolutional.py#L367)</span>
@@ -811,6 +853,8 @@ __输出尺寸__
   输出 3D 张量，尺寸为 `(batch, new_steps, filters)`。
 
 由于填充的原因， `new_steps` 值可能已更改。
+
+参考解释：<https://baijiahao.baidu.com/s?id=1634399239921135758&wfr=spider&for=pc>
 
 ------
 
@@ -1075,60 +1119,32 @@ __参考文献__
 keras.layers.Conv3D(filters, kernel_size, strides=(1, 1, 1), padding='valid', data_format=None, dilation_rate=(1, 1, 1), activation=None, use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)
 ```
 
-3D 卷积层 (例如立体空间卷积)。
+**功能：**
 
-该层创建了一个卷积核，该卷积核对层输入进行卷积，以生成输出张量。
-如果 `use_bias` 为 True，则会创建一个偏置向量并将其添加到输出中。
-最后，如果 `activation` 不是 `None`，它也会应用于输出。
-
-当使用该层作为模型第一层时，需要提供 `input_shape` 参数（整数元组，不包含样本表示的轴），例如，
-`input_shape=(128, 128, 128, 1)` 表示 128x128x128 的单通道立体，
-在 `data_format="channels_last"` 时。
+- 3D 卷积层 (例如立体空间卷积)。该层创建了一个卷积核，该卷积核对层输入进行卷积，以生成输出张量。
+- 当使用该层作为模型第一层时，需要提供 `input_shape` 参数（整数元组，不包含样本表示的轴），例如，
+  `input_shape=(128, 128, 128, 1)` 表示 128x128x128 的单通道立体，在 `data_format="channels_last"` 时。
+- 如果 `use_bias` 为 True，则会创建一个偏置向量并将其添加到输出中。
+  最后，如果 `activation` 不是 `None`，它也会应用于输出。
 
 __参数__
 
-- __filters__: 整数，输出空间的维度
-  （即卷积中滤波器的输出数量）。
-- __kernel_size__: 一个整数，或者 3 个整数表示的元组或列表，
-  指明 3D 卷积窗口的深度、高度和宽度。可以是一个整数，为所有空间维度指定相同的值。
-- __strides__: 一个整数，或者 3 个整数表示的元组或列表，
-  指明卷积沿每一个空间维度的步长。
-  可以是一个整数，为所有空间维度指定相同的步长值。
-  指定任何 stride 值 != 1 与指定 `dilation_rate` 值 != 1 两者不兼容。
+- __filters__: 整数，输出空间的维度（即卷积中滤波器的输出数量）。
+- __kernel_size__: 一个整数，或者 3 个整数表示的元组或列表，指明 3D 卷积窗口的**深度、高度和宽度**。可以是一个整数，为所有空间维度指定相同的值。
+- __strides__: 一个整数，或者 3 个整数表示的元组或列表，指明卷积沿每一个空间维度的步长。可以是一个整数，为所有空间维度指定相同的步长值。指定任何 stride 值 != 1 与指定 `dilation_rate` 值 != 1 两者不兼容。
 - __padding__: `"valid"` 或 `"same"` (大小写敏感)。
-- __data_format__: 字符串，
-  `channels_last` (默认) 或 `channels_first` 之一，
-  表示输入中维度的顺序。`channels_last` 对应输入尺寸为 
-  `(batch, spatial_dim1, spatial_dim2, spatial_dim3, channels)`，
-  `channels_first` 对应输入尺寸为 
-  `(batch, channels, spatial_dim1, spatial_dim2, spatial_dim3)`。
-  它默认为从 Keras 配置文件 `~/.keras/keras.json` 中
-  找到的 `image_data_format` 值。
-  如果你从未设置它，将使用 "channels_last"。
-- __dilation_rate__: 一个整数或 3 个整数的元组或列表，
-  指定膨胀卷积的膨胀率。
-  可以是一个整数，为所有空间维度指定相同的值。
-  当前，指定任何 `dilation_rate` 值 != 1 与
-  指定 stride 值 != 1 两者不兼容。
-- __activation__: 要使用的激活函数
-  (详见 [activations](../activations.md))。
-  如果你不指定，则不使用激活函数
-  (即线性激活： `a(x) = x`)。
+- __data_format__: 字符串，`channels_last` (默认) 或 `channels_first` 之一，表示输入中维度的顺序。
+  - `channels_last` 对应输入尺寸为 `(batch, spatial_dim1, spatial_dim2, spatial_dim3, channels)`，`channels_first` 对应输入尺寸为 `(batch, channels, spatial_dim1, spatial_dim2, spatial_dim3)`。它默认为从 Keras 配置文件 `~/.keras/keras.json` 中找到的 `image_data_format` 值。如果你从未设置它，将使用 "channels_last"。
+- __dilation_rate__: 一个整数或 3 个整数的元组或列表，指定膨胀卷积的膨胀率。可以是一个整数，为所有空间维度指定相同的值。当前，指定任何 `dilation_rate` 值 != 1 与指定 stride 值 != 1 两者不兼容。
+- __activation__: 要使用的激活函数(详见 [activations](../activations.md))。如果你不指定，则不使用激活函数 (即线性激活： `a(x) = x`)。
 - __use_bias__: 布尔值，该层是否使用偏置向量。
-- __kernel_initializer__: `kernel` 权值矩阵的初始化器
-  (详见 [initializers](../initializers.md))。
-- __bias_initializer__: 偏置向量的初始化器
-  (详见 [initializers](../initializers.md))。
-- __kernel_regularizer__: 运用到 `kernel` 权值矩阵的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __bias_regularizer__: 运用到偏置向量的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __activity_regularizer__: 运用到层输出（它的激活值）的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __kernel_constraint__: 运用到 `kernel` 权值矩阵的约束函数
-  (详见 [constraints](../constraints.md))。
-- __bias_constraint__: 运用到偏置向量的约束函数
-  (详见 [constraints](../constraints.md))。
+- __kernel_initializer__: `kernel` 权值矩阵的初始化器(详见 [initializers](../initializers.md))。
+- __bias_initializer__: 偏置向量的初始化器(详见 [initializers](../initializers.md))。
+- __kernel_regularizer__: 运用到 `kernel` 权值矩阵的正则化函数(详见 [regularizer](../regularizers.md))。
+- __bias_regularizer__: 运用到偏置向量的正则化函数(详见 [regularizer](../regularizers.md))。
+- __activity_regularizer__: 运用到层输出（它的激活值）的正则化函数(详见 [regularizer](../regularizers.md))。
+- __kernel_constraint__: 运用到 `kernel` 权值矩阵的约束函数(详见 [constraints](../constraints.md))。
+- __bias_constraint__: 运用到偏置向量的约束函数(详见 [constraints](../constraints.md))。
 
 __输入尺寸__
 
@@ -1145,6 +1161,113 @@ __输出尺寸__
   输出 5D 张量，尺寸为 `(samples, new_conv_dim1, new_conv_dim2, new_conv_dim3, filters)`。
 
 由于填充的原因， `new_conv_dim1`, `new_conv_dim2` 和 `new_conv_dim3` 值可能已更改。
+
+
+
+Conv3D is mostly used with 3D image data. Such as **Magnetic Resonance Imaging** (MRI) data. MRI data is widely used for examining the brain, spinal cords, internal organs and many more. A **Computerized Tomography** (CT) Scan is also an example of 3D data, which is created by combining a series of X-rays image taken from different angles around the body. We can use Conv3D to classify this medical data or extract features from it.
+
+
+
+
+
+#### 输入数据处理
+
+3D卷积输入应为形如（samples，input_dim1，input_dim2, input_dim3，channels）的5D张量，如（10000,10,128,128,3）表示输入是10帧 128*128的彩色RGB图像构成的图像块，共有10000个图像块。而一般我们的彩色RGB图像为3D张量，如（128,128,3），那么如何将它转化为符合3D卷积输入的5D张量呢？这里主要使用numpy中的reshape() 函数改变图像array的shape，再使用numpy中的concatenate()函数进行数组array合并。具体如下：以(128,128,3) --> (10000,10,128,128,3)为例
+
+1、获取图片中所有的文件名，这里可以使用os.listdir()函数，如：
+
+```python
+# image_path是文件路径
+filenames = os.listdir(image_path)
+```
+2、读取图片文件
+
+  这里可以使用cv2.imread()函数进行读取，得到的结果是类似于（128,128,3）的数组array，如：
+
+```python
+ im1= cv2.imread('C:/01.jpg')
+ im2= cv2.imread('C:/02.pg')
+```
+3、使用np.reshape()改变数组的维度，改变为（1，128，128,3），如：
+
+```python
+ im1 = im1.reshape((1，128，128,3))
+ im2 = im2.reshape((1，128，128,3))
+```
+
+4、使用np.concatenate() 函数进行合并，如：
+
+```python
+# im1，im2表示要合并的array，axis表示要合并的维度
+im10 = np.concatenate((im1，im2), axis = 0)
+```
+
+5、每合并完10张图片，都将得到类似于（10,128,128,3）的4D张量，这时，只需要再进行一次reshape和concatenate即可的到想要的5D张量，如
+
+```python
+im10_1 = reshape（1,10,128,128,3）
+im10_2 = reshape（1,10,128,128,3）
+im =np.concatenate（（im10_1，im10_2）, axis = 0）
+```
+
+【最终的代码】：
+
+```python
+import cv2
+import os 
+import numpy  as np
+ 
+# image_path是文件路径，此路径中有690张图片
+image_path = "F:\\image"
+
+def image2array(image_path): 
+    filenames = os.listdir(image_path)
+    image_num = len(filenames)
+    cube_num = int(image_num /10)
+    
+    image_name = image_path + '\\' + filenames[0]
+    Img = cv2.imread(image_name)
+    Img =Img.reshape(1,Img.shape[0], Img.shape[1],Img.shape[2])
+ 
+    Img10 = Img
+ 
+    for k in range(1, 10):
+        image_name = image_path + '\\' + filenames[k]
+        Img = cv2.imread(image_name)
+        Img = Img.reshape(1, Img.shape[0], Img.shape[1], Img.shape[2])
+        Img10 = np.concatenate((Img10, Img), axis=0)
+ 
+    cube = Img10.reshape(1,Img10.shape[0], Img10.shape[1], Img10.shape[2], Img10.shape[3])
+ 
+    for i in range(1, cube_num):
+        index = 10 * i
+        image_name = image_path + '\\' + filenames[index]
+        Img = cv2.imread(image_name)
+        Img = Img.reshape(1, Img.shape[0], Img.shape[1], Img.shape[2])
+        Img10 = Img
+
+        for k in range(1, 10): 
+            image_name = image_path + '\\' + filenames[index+k]
+            Img = cv2.imread(image_name)
+            Img = Img.reshape(1, Img.shape[0], Img.shape[1], Img.shape[2])
+            Img10 = np.concatenate((Img10, Img), axis=0)
+ 
+        Img10 = Img10.reshape(1, Img10.shape[0], Img10.shape[1], Img10.shape[2], Img10.shape[3])
+ 
+        cube = np.concatenate((cube,Img10), axis=0)
+ 
+    return cube
+ 
+ 
+if __name__  == "__main__" :
+ 
+    cube = image2array(image_path)
+    print(cube.shape)
+```
+
+
+
+<https://www.kaggle.com/shivamb/3d-convolutions-understanding-use-case/notebook>
 
 ------
 
@@ -1672,6 +1795,10 @@ __输出尺寸__
   `(batch, first_padded_axis, second_padded_axis, third_axis_to_pad, depth)`。
 - 如果 `data_format` 为 `"channels_first"`:
   `(batch, depth, first_padded_axis, second_padded_axis, third_axis_to_pad)`。
+
+### Dilated Conv
+
+<https://towardsdatascience.com/understanding-2d-dilated-convolution-operation-with-examples-in-numpy-and-tensorflow-with-d376b3972b25>
 
 
 
@@ -2424,7 +2551,37 @@ layer = RNN(cells)
 y = layer(x)
 ```
 
-------
+
+
+#### Basis
+
+**background：**
+
+Being human, when we watch a movie, we don’t think from scratch every time while understanding any event. We rely on the recent experiences happening in the movie and learn from them. But, a conventional neural network is unable to learn from the previous events because the information does not pass from one step to the next. On contrary, RNN learns information from immediate previous step.
+
+For example, there is a scene in a movie where a person is in a basketball court. We will improvise the basketball activities in the future frames: an image of someone running and jumping probably be labeled as *playing basketball*, and an image of someone sitting and watching is probably *a spectator watching the game.*
+
+![img](imgs/3_rnn.png)
+
+
+
+A typical RNN (Source: <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>)
+
+![img](imgs/3_rnn_1.png)
+
+
+
+A typical RNN looks like above-where X(t) is input, h(t) is output and A is the neural network which gains information from the previous step in a loop. The output of one unit goes into the next one and the information is passed.
+
+But, sometimes we don’t need our network to learn only from immediate past information. There is a gap between the information what we want to predict and from where we want it to get predicted . This is called long-term dependency. We can say that anything larger than trigram as a long term dependency. Unfortunately, RNN does not work practically in this situation.
+
+**Drawbacks:**
+
+During the training of RNN, as the information goes in loop again and again which results in very large updates to neural network model weights. This is due to the accumulation of error gradients during an update and hence, results in an unstable network. At an extreme, the values of weights can become so large as to overflow and result in NaN values.The explosion occurs through exponential growth by repeatedly multiplying gradients through the network layers that have values larger than 1 or vanishing occurs if the values are less than 1.
+
+
+
+
 
 <span style="float:right;">[[source]](https://github.com/keras-team/keras/blob/master/keras/layers/recurrent.py#L944)</span>
 
@@ -2583,61 +2740,32 @@ keras.layers.LSTM(units, activation='tanh', recurrent_activation='hard_sigmoid',
 __参数__
 
 - __units__: 正整数，输出空间的维度。
-- __activation__: 要使用的激活函数
-  (详见 [activations](../activations.md))。
-  如果传入 `None`，则不使用激活函数
-  (即 线性激活：`a(x) = x`)。
-- __recurrent_activation__: 用于循环时间步的激活函数
-  (详见 [activations](../activations.md))。
-  默认：分段线性近似 sigmoid (`hard_sigmoid`)。
-  如果传入 `None`，则不使用激活函数
-  (即 线性激活：`a(x) = x`)。
+- __activation__: 要使用的激活函数(详见 [activations](../activations.md))。如果传入 `None`，则不使用激活函数 (即 线性激活：`a(x) = x`)。
+- __recurrent_activation__: 用于循环时间步的激活函数 (详见 [activations](../activations.md))。默认：分段线性近似 sigmoid (`hard_sigmoid`)。如果传入 `None`，则不使用激活函数 (即 线性激活：`a(x) = x`)。
 - __use_bias__: 布尔值，该层是否使用偏置向量。
-- __kernel_initializer__: `kernel` 权值矩阵的初始化器，
-  用于输入的线性转换
+- __kernel_initializer__: `kernel` 权值矩阵的初始化器，用于输入的线性转换(详见 [initializers](../initializers.md))。
+- __recurrent_initializer__: `recurrent_kernel` 权值矩阵的初始化器，用于循环层状态的线性转换
   (详见 [initializers](../initializers.md))。
-- __recurrent_initializer__: `recurrent_kernel` 权值矩阵
-  的初始化器，用于循环层状态的线性转换
-  (详见 [initializers](../initializers.md))。
-- __bias_initializer__:偏置向量的初始化器
-  (详见[initializers](../initializers.md)).
-- __unit_forget_bias__: 布尔值。
-  如果为 True，初始化时，将忘记门的偏置加 1。
-  将其设置为 True 同时还会强制 `bias_initializer="zeros"`。
-  这个建议来自 [Jozefowicz et al.](http://www.jmlr.org/proceedings/papers/v37/jozefowicz15.pdf)。
-- __kernel_regularizer__: 运用到 `kernel` 权值矩阵的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __recurrent_regularizer__: 运用到 `recurrent_kernel` 权值矩阵的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __bias_regularizer__: 运用到偏置向量的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __activity_regularizer__: 运用到层输出（它的激活值）的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __kernel_constraint__: 运用到 `kernel` 权值矩阵的约束函数
-  (详见 [constraints](../constraints.md))。
-- __recurrent_constraint__: 运用到 `recurrent_kernel` 权值矩阵的约束函数
-  (详见 [constraints](../constraints.md))。
-- __bias_constraint__: 运用到偏置向量的约束函数
-  (详见 [constraints](../constraints.md))。
-- __dropout__: 在 0 和 1 之间的浮点数。
-  单元的丢弃比例，用于输入的线性转换。
-- __recurrent_dropout__: 在 0 和 1 之间的浮点数。
-  单元的丢弃比例，用于循环层状态的线性转换。
+- __bias_initializer__:偏置向量的初始化器(详见[initializers](../initializers.md)).
+- __unit_forget_bias__: 布尔值。如果为 True，初始化时，将忘记门的偏置加 1。将其设置为 True 同时还会强制 `bias_initializer="zeros"`。这个建议来自 [Jozefowicz et al.](http://www.jmlr.org/proceedings/papers/v37/jozefowicz15.pdf)。
+- __kernel_regularizer__: 运用到 `kernel` 权值矩阵的正则化函数(详见 [regularizer](../regularizers.md))。
+- __recurrent_regularizer__: 运用到 `recurrent_kernel` 权值矩阵的正则化函数(详见 [regularizer](../regularizers.md))。
+- __bias_regularizer__: 运用到偏置向量的正则化函数(详见 [regularizer](../regularizers.md))。
+- __activity_regularizer__: 运用到层输出（它的激活值）的正则化函数(详见 [regularizer](../regularizers.md))。
+- __kernel_constraint__: 运用到 `kernel` 权值矩阵的约束函数(详见 [constraints](../constraints.md))。
+- __recurrent_constraint__: 运用到 `recurrent_kernel` 权值矩阵的约束函数(详见 [constraints](../constraints.md))。
+- __bias_constraint__: 运用到偏置向量的约束函数(详见 [constraints](../constraints.md))。
+- __dropout__: 在 0 和 1 之间的浮点数。单元的丢弃比例，用于输入的线性转换。
+- __recurrent_dropout__: 在 0 和 1 之间的浮点数。单元的丢弃比例，用于循环层状态的线性转换。
 - __implementation__: 实现模式，1 或 2。
-  模式 1 将把它的操作结构化为更多的小的点积和加法操作，
-  而模式 2 将把它们分批到更少，更大的操作中。
-  这些模式在不同的硬件和不同的应用中具有不同的性能配置文件。
+  - 模式 1 将把它的操作结构化为更多的小的点积和加法操作，
+  - 而模式 2 将把它们分批到更少，更大的操作中。
+  - 这些模式在不同的硬件和不同的应用中具有不同的性能配置文件。
 - __return_sequences__: 布尔值。是返回输出序列中的最后一个输出，还是全部序列。
 - __return_state__: 布尔值。除了输出之外是否返回最后一个状态。
-- __go_backwards__: 布尔值 (默认 False)。
-  如果为 True，则向后处理输入序列并返回相反的序列。
-- __stateful__: 布尔值 (默认 False)。
-  如果为 True，则批次中索引 i 处的每个样品的最后状态
-  将用作下一批次中索引 i 样品的初始状态。
-- __unroll__: 布尔值 (默认 False)。
-  如果为 True，则网络将展开，否则将使用符号循环。
-  展开可以加速 RNN，但它往往会占用更多的内存。
-  展开只适用于短序列。
+- __go_backwards__: 布尔值 (默认 False)。如果为 True，则向后处理输入序列并返回相反的序列。
+- __stateful__: 布尔值 (默认 False)。如果为 True，则批次中索引 i 处的每个样品的最后状态将用作下一批次中索引 i 样品的初始状态。
+- __unroll__: 布尔值 (默认 False)。如果为 True，则网络将展开，否则将使用符号循环。展开可以加速 RNN，但它往往会占用更多的内存。展开只适用于短序列。
 
 __参考文献__
 
@@ -2645,6 +2773,76 @@ __参考文献__
 - [Learning to forget: Continual prediction with LSTM](http://www.mitpressjournals.org/doi/pdf/10.1162/089976600300015015)
 - [Supervised sequence labeling with recurrent neural networks](http://www.cs.toronto.edu/~graves/preprint.pdf)
 - [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](http://arxiv.org/abs/1512.05287)
+
+
+
+#### Basis
+
+LSTM uses gates to control the memorizing process.
+
+<img src=imgs/3_lstm_1.png height=400>
+
+The symbols used here have following meaning:
+
+- X(t) : Current input; c(t) : New updated memory; h(t) : Current output
+- h(t-1) : Output of last LSTM unit; c(t-1) : Memory from last LSTM unit
+
+- X : Scaling of information; +: Adding information; σ : Sigmoid layer; tanh: tanh layer
+
+**example:**
+
+David, a 36-year old man lives in San Francisco. He has a female friend Maria. Maria works as a **cook** in a famous restaurant in New York whom he met recently in a school alumni meet. Maria told him that she always had a passion for _________ . Here, we want our network to learn from dependency ‘cook’ to predict ‘cooking.
+
+Information passes through many such LSTM units.There are three main components of an LSTM unit which are labeled in the diagram:
+
+1. LSTM has a special architecture which enables it to forget the unnecessary information. ***As Sigmoid can output 0 or 1, it can be used to forget or remember the information.***The sigmoid layer takes the input X(t) and h(t-1) and **decides which parts from old output should be removed** (by outputting a 0). This gate is called **forget gate** f(t). 
+   $$
+   f_t = \sigma(W_f [h_{t-1},x_t]+b_f)
+   $$
+   
+
+   The output of this gate is f(t)*c(t-1).
+
+   - In our example, when the input is ‘He has a female friend Maria’, the gender of ‘David’ can be forgotten because the subject has changed to ‘Maria’. 
+
+2. The next step is to decide and store information from the new input X(t) in the cell state. A Sigmoid layer **decides which of the new information should be updated or ignored**. 
+
+   A *tanh* layer creates a vector of all the possible values **from the new input**. These two are multiplied to update the new cell sate. 
+   $$
+   i_t = \sigma(W_i [h_{t-1},x_t]+b_i) \\
+   \tilde{C}_t = \tanh(W_C [h_{t-1},x_t]+b_C)
+   $$
+   This new memory is then added to old memory c(t-1) to give c(t). 
+   $$
+   C_t = f_t * C_{t-1} + i_t * \tilde{C}_t
+   $$
+   
+
+   - In our example, for the new input ‘ He has a female friend Maria’, the gender of Maria will be updated. When the input is ‘Maria works as a cook in a famous restaurant in New York whom he met recently in a school alumni meet’, the words like ‘famous’, ‘school alumni meet’ can be ignored and words like ‘cook, ‘restaurant’ and ‘New York’ will be updated.
+
+3. Finally, we need to decide what we’re going to output. **A sigmoid layer decides which parts of the cell state we are going to output.** Then, we put the cell state through a *tanh* generating all the possible values and multiply it by the output of the sigmoid gate, so that we only output the parts we decided to. 
+   $$
+   o_t = \sigma(W_o [h_{t-1},x_t]+b_o) \\
+   h_t = o_t * \tanh(C_t)
+   $$
+
+   - In our example, we want to predict the blank word, our model knows that it is a noun related to ‘cook’ from its memory, it can easily answer it as ‘cooking’. Our model does not learn this answer from the immediate dependency, rather it learnt it from long term dependency.
+
+**Why tanh?**
+
+- To overcome the vanishing gradient problem, we need a function whose second derivative can sustain for a long range before going to zero. *tanh* is a suitable function with the above property.
+
+#### References:
+
+1. <https://adventuresinmachinelearning.com/keras-lstm-tutorial/>
+2. [Understanding LSTM](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)
+3. [Beginner’s guide to RNN and LSTM](https://deeplearning4j.org/lstm.html)
+
+4. [Exploring LSTMs](http://blog.echen.me/2017/05/30/exploring-lstms/)
+
+5. [Research paper on LSTM](http://www.bioinf.jku.at/publications/older/2604.pdf)
+
+<https://www.zhihu.com/question/64470274>
 
 ------
 
@@ -2656,73 +2854,40 @@ __参考文献__
 keras.layers.ConvLSTM2D(filters, kernel_size, strides=(1, 1), padding='valid', data_format=None, dilation_rate=(1, 1), activation='tanh', recurrent_activation='hard_sigmoid', use_bias=True, kernel_initializer='glorot_uniform', recurrent_initializer='orthogonal', bias_initializer='zeros', unit_forget_bias=True, kernel_regularizer=None, recurrent_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, recurrent_constraint=None, bias_constraint=None, return_sequences=False, go_backwards=False, stateful=False, dropout=0.0, recurrent_dropout=0.0)
 ```
 
-卷积 LSTM。
-
-它类似于 LSTM 层，但输入变换和循环变换都是卷积的。
+卷积 LSTM。它类似于 LSTM 层，但输入变换和循环变换都是卷积的。
 
 __参数__
 
-- __filters__: 整数，输出空间的维度
-  （即卷积中滤波器的输出数量）。
-- __kernel_size__: 一个整数，或者 n 个整数表示的元组或列表，
-  指明卷积窗口的维度。
-- __strides__: 一个整数，或者 n 个整数表示的元组或列表，
-  指明卷积的步长。
-  指定任何 stride 值 != 1 与指定 `dilation_rate` 值 != 1 两者不兼容。
+- __filters__: 整数，输出空间的维度（即卷积中滤波器的输出数量）。
+- __kernel_size__: 一个整数，或者 n 个整数表示的元组或列表，指明卷积窗口的维度。
+- __strides__: 一个整数，或者 n 个整数表示的元组或列表，指明卷积的步长。指定任何 stride 值 != 1 与指定 `dilation_rate` 值 != 1 两者不兼容。
 - __padding__: `"valid"` 或 `"same"` 之一 (大小写敏感)。
-- __data_format__: 字符串，
-  `channels_last` (默认) 或 `channels_first` 之一。
-  输入中维度的顺序。
+- __data_format__: 字符串，`channels_last` (默认) 或 `channels_first` 之一。输入中维度的顺序。
   `channels_last` 对应输入尺寸为 `(batch, time, ..., channels)`，
   `channels_first` 对应输入尺寸为 `(batch, time, channels, ...)`。
-  它默认为从 Keras 配置文件 `~/.keras/keras.json` 中
-  找到的 `image_data_format` 值。
-  如果你从未设置它，将使用 `"channels_last"`。
-- __dilation_rate__: 一个整数，或 n 个整数的元组/列表，指定用于膨胀卷积的膨胀率。
-  目前，指定任何 `dilation_rate` 值 != 1 与指定 stride 值 != 1 两者不兼容。
-- __activation__: 要使用的激活函数
-  (详见 [activations](../activations.md))。
-  如果传入 None，则不使用激活函数
-  (即 线性激活：`a(x) = x`)。
-- __recurrent_activation__: 用于循环时间步的激活函数
-  (详见 [activations](../activations.md))。
+  它默认为从 Keras 配置文件 `~/.keras/keras.json` 中找到的 `image_data_format` 值。如果你从未设置它，将使用 `"channels_last"`。
+- __dilation_rate__: 一个整数，或 n 个整数的元组/列表，指定用于膨胀卷积的膨胀率。目前，指定任何 `dilation_rate` 值 != 1 与指定 stride 值 != 1 两者不兼容。
+- __activation__: 要使用的激活函数(详见 [activations](../activations.md))。如果传入 None，则不使用激活函数 (即 线性激活：`a(x) = x`)。
+- __recurrent_activation__: 用于循环时间步的激活函数(详见 [activations](../activations.md))。
 - __use_bias__: 布尔值，该层是否使用偏置向量。
-- __kernel_initializer__: `kernel` 权值矩阵的初始化器，
-  用于输入的线性转换
-  (详见 [initializers](../initializers.md))。
-- __recurrent_initializer__: `recurrent_kernel` 权值矩阵
-  的初始化器，用于循环层状态的线性转换
-  (详见 [initializers](../initializers.md))。
-- __bias_initializer__:偏置向量的初始化器
-  (详见[initializers](../initializers.md)).
-- __unit_forget_bias__: 布尔值。
-  如果为 True，初始化时，将忘记门的偏置加 1。
-  将其设置为 True 同时还会强制 `bias_initializer="zeros"`。
-  这个建议来自 [Jozefowicz et al.](http://www.jmlr.org/proceedings/papers/v37/jozefowicz15.pdf)。
-- __kernel_regularizer__: 运用到 `kernel` 权值矩阵的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __recurrent_regularizer__: 运用到 `recurrent_kernel` 权值矩阵的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __bias_regularizer__: 运用到偏置向量的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __activity_regularizer__: 运用到层输出（它的激活值）的正则化函数
-  (详见 [regularizer](../regularizers.md))。
-- __kernel_constraint__: 运用到 `kernel` 权值矩阵的约束函数
-  (详见 [constraints](../constraints.md))。
-- __recurrent_constraint__: 运用到 `recurrent_kernel` 权值矩阵的约束函数
-  (详见 [constraints](../constraints.md))。
-- __bias_constraint__: 运用到偏置向量的约束函数
-  (详见 [constraints](../constraints.md))。
+- __kernel_initializer__: `kernel` 权值矩阵的初始化器，用于输入的线性转换(详见 [initializers](../initializers.md))。
+- __recurrent_initializer__: `recurrent_kernel` 权值矩阵的初始化器，用于循环层状态的线性转换(详见 [initializers](../initializers.md))。
+- __bias_initializer__:偏置向量的初始化器(详见[initializers](../initializers.md)).
+- __unit_forget_bias__: 布尔值。如果为 True，初始化时，将忘记门的偏置加 1。将其设置为 True 同时还会强制 `bias_initializer="zeros"`。这个建议来自 [Jozefowicz et al.](http://www.jmlr.org/proceedings/papers/v37/jozefowicz15.pdf)。
+- __kernel_regularizer__: 运用到 `kernel` 权值矩阵的正则化函数(详见 [regularizer](../regularizers.md))。
+- __recurrent_regularizer__: 运用到 `recurrent_kernel` 权值矩阵的正则化函数(详见 [regularizer](../regularizers.md))。
+- __bias_regularizer__: 运用到偏置向量的正则化函数(详见 [regularizer](../regularizers.md))。
+- __activity_regularizer__: 运用到层输出（它的激活值）的正则化函数(详见 [regularizer](../regularizers.md))。
+- __kernel_constraint__: 运用到 `kernel` 权值矩阵的约束函数(详见 [constraints](../constraints.md))。
+- __recurrent_constraint__: 运用到 `recurrent_kernel` 权值矩阵的约束函数(详见 [constraints](../constraints.md))。
+- __bias_constraint__: 运用到偏置向量的约束函数(详见 [constraints](../constraints.md))。
 - __return_sequences__: 布尔值。是返回输出序列中的最后一个输出，还是全部序列。
-- __go_backwards__: 布尔值 (默认 False)。
-  如果为 True，则向后处理输入序列并返回相反的序列。
-- __stateful__: 布尔值 (默认 False)。
-  如果为 True，则批次中索引 i 处的每个样品的最后状态
-  将用作下一批次中索引 i 样品的初始状态。
-- __dropout__: 在 0 和 1 之间的浮点数。
-  单元的丢弃比例，用于输入的线性转换。
-- __recurrent_dropout__: 在 0 和 1 之间的浮点数。
-  单元的丢弃比例，用于循环层状态的线性转换。
+  - True： 时间维度消失
+  - False: 时间维度保持不变
+- __go_backwards__: 布尔值 (默认 False)。如果为 True，则向后处理输入序列并返回相反的序列。
+- __stateful__: 布尔值 (默认 False)。如果为 True，则批次中索引 i 处的每个样品的最后状态将用作下一批次中索引 i 样品的初始状态。
+- __dropout__: 在 0 和 1 之间的浮点数。单元的丢弃比例，用于输入的线性转换。
+- __recurrent_dropout__: 在 0 和 1 之间的浮点数。单元的丢弃比例，用于循环层状态的线性转换。
 
 __输入尺寸__
 
@@ -2750,9 +2915,14 @@ __异常__
 
 __参考文献__
 
-- [Convolutional LSTM Network: A Machine Learning Approach for
-  Precipitation Nowcasting](http://arxiv.org/abs/1506.04214v1)。
+- [Convolutional LSTM Network: A Machine Learning Approach for Precipitation Nowcasting](http://arxiv.org/abs/1506.04214v1)。
   当前的实现不包括单元输出的反馈回路。
+
+#### 
+
+<https://www.kaggle.com/kmader/what-is-convlstm>
+
+
 
 ------
 

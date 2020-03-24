@@ -827,283 +827,6 @@ __异常__
 
 
 
-## 典型样例
-
-这里有几个可以帮助你起步的例子！
-
-在 [examples 目录](https://github.com/keras-team/keras/tree/master/examples) 中，你可以找到真实数据集的示例模型：
-
-- CIFAR10 小图片分类：具有实时数据增强的卷积神经网络 (CNN)
-- IMDB 电影评论情感分类：基于词序列的 LSTM
-- Reuters 新闻主题分类：多层感知器 (MLP)
-- MNIST 手写数字分类：MLP & CNN
-- 基于 LSTM 的字符级文本生成
-
-...以及更多。
-
-### 
-
-```python
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation
-from keras.optimizers import SGD
-
-# 生成虚拟数据
-import numpy as np
-x_train = np.random.random((1000, 20))
-y_train = keras.utils.to_categorical(np.random.randint(10, size=(1000, 1)), num_classes=10)
-x_test = np.random.random((100, 20))
-y_test = keras.utils.to_categorical(np.random.randint(10, size=(100, 1)), num_classes=10)
-
-model = Sequential()
-# Dense(64) 是一个具有 64 个隐藏神经元的全连接层。
-# 在第一层必须指定所期望的输入数据尺寸：
-# 在这里，是一个 20 维的向量。
-model.add(Dense(64, activation='relu', input_dim=20))
-model.add(Dropout(0.5))
-model.add(Dense(64, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(10, activation='softmax'))
-
-sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(loss='categorical_crossentropy',
-              optimizer=sgd,
-              metrics=['accuracy'])
-
-model.fit(x_train, y_train,
-          epochs=20,
-          batch_size=128)
-score = model.evaluate(x_test, y_test, batch_size=128)
-```
-
-### 基于多层感知器的二分类：
-
-```python
-from keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras.optimizers import SGD
-
-import numpy as np
-
-# 生成虚拟数据
-x_train = np.random.random((1000, 20))
-y_train = to_categorical(np.random.randint(10, size=(1000,1)), 
-                         num_classes=10)
-
-x_test = np.random.random((100,20))
-y_test = to_categorical(np.random.randint(10, size=(100,1)), 
-                         num_classes=10)
-
-# 创建模型
-model = Sequential()
-model.add(Dense(64, activation='relu', input_dim=20))
-model.add(Dropout(0.5))
-
-model.add(Dense(64, activation='relu'))
-model.add(Dropout(0.5))
-
-model.add(Dense(10, activation='softmax'))
-
-sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-
-# 编译模型
-model.compile(loss='categorical_crossentropy',
-             optimizer=sgd,
-             metrics=['accuracy'])
-
-# 拟合模型
-model.fit(x_train, y_train,
-         epochs=20,
-         batch_size=128)
-
-score = model.evaluate(x_test, y_test, batch_size=128)
-
-print(score)
-```
-
-### 类似 VGG 的卷积神经网络：
-
-```python
-import numpy as np
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D
-from keras.optimizers import SGD
-
-# 生成虚拟数据
-x_train = np.random.random((100, 100, 100, 3))
-y_train = keras.utils.to_categorical(np.random.randint(10, size=(100, 1)), num_classes=10)
-x_test = np.random.random((20, 100, 100, 3))
-y_test = keras.utils.to_categorical(np.random.randint(10, size=(20, 1)), num_classes=10)
-
-model = Sequential()
-# 输入: 3 通道 100x100 像素图像 -> (100, 100, 3) 张量。
-# 使用 32 个大小为 3x3 的卷积滤波器。
-model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(100, 100, 3)))
-model.add(Conv2D(32, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-
-model.add(Flatten())
-model.add(Dense(256, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(10, activation='softmax'))
-
-sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(loss='categorical_crossentropy', optimizer=sgd)
-
-model.fit(x_train, y_train, batch_size=32, epochs=10)
-score = model.evaluate(x_test, y_test, batch_size=32)
-
-```
-
-### 基于 LSTM 的序列分类：
-
-```python
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras.layers import Embedding
-from keras.layers import LSTM
-
-max_features = 1024
-
-model = Sequential()
-model.add(Embedding(max_features, output_dim=256))
-model.add(LSTM(128))
-model.add(Dropout(0.5))
-model.add(Dense(1, activation='sigmoid'))
-
-model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-
-model.fit(x_train, y_train, batch_size=16, epochs=10)
-score = model.evaluate(x_test, y_test, batch_size=16)
-```
-
-### 基于 1D 卷积的序列分类：
-
-```python
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras.layers import Embedding
-from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
-
-seq_length = 64
-
-model = Sequential()
-model.add(Conv1D(64, 3, activation='relu', input_shape=(seq_length, 100)))
-model.add(Conv1D(64, 3, activation='relu'))
-model.add(MaxPooling1D(3))
-model.add(Conv1D(128, 3, activation='relu'))
-model.add(Conv1D(128, 3, activation='relu'))
-model.add(GlobalAveragePooling1D())
-model.add(Dropout(0.5))
-model.add(Dense(1, activation='sigmoid'))
-
-model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-
-model.fit(x_train, y_train, batch_size=16, epochs=10)
-score = model.evaluate(x_test, y_test, batch_size=16)
-```
-
-### 基于栈式 LSTM 的序列分类
-
-在这个模型中，我们将 3 个 LSTM 层叠在一起，使模型能够学习更高层次的时间表示。
-
-前两个 LSTM 返回完整的输出序列，但最后一个只返回输出序列的最后一步，从而降低了时间维度（即将输入序列转换成单个向量）。
-
-<img src="/home/ubuntu16/Deep-learning-tutorial/keras/imgs/regular_stacked_lstm.png" alt="stacked LSTM" style="width: 300px;"/>
-
-```python
-from keras.models import Sequential
-from keras.layers import LSTM, Dense
-import numpy as np
-
-data_dim = 16
-timesteps = 8
-num_classes = 10
-
-# 期望输入数据尺寸: (batch_size, timesteps, data_dim)
-model = Sequential()
-model.add(LSTM(32, return_sequences=True,
-               input_shape=(timesteps, data_dim)))  # 返回维度为 32 的向量序列
-model.add(LSTM(32, return_sequences=True))  # 返回维度为 32 的向量序列
-model.add(LSTM(32))  # 返回维度为 32 的单个向量
-model.add(Dense(10, activation='softmax'))
-
-model.compile(loss='categorical_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-
-# 生成虚拟训练数据
-x_train = np.random.random((1000, timesteps, data_dim))
-y_train = np.random.random((1000, num_classes))
-
-# 生成虚拟验证数据
-x_val = np.random.random((100, timesteps, data_dim))
-y_val = np.random.random((100, num_classes))
-
-model.fit(x_train, y_train,
-          batch_size=64, epochs=5,
-          validation_data=(x_val, y_val))
-```
-
-### "stateful" 渲染的的栈式 LSTM 模型
-
-有状态 (stateful) 的循环神经网络模型中，在一个 batch 的样本处理完成后，其内部状态（记忆）会被记录并作为下一个 batch 的样本的初始状态。这允许处理更长的序列，同时保持计算复杂度的可控性。
-
-[你可以在 FAQ 中查找更多关于 stateful RNNs 的信息。](/getting-started/faq/#how-can-i-use-stateful-rnns)
-
-```python
-from keras.models import Sequential
-from keras.layers import LSTM, Dense
-import numpy as np
-
-data_dim = 16
-timesteps = 8
-num_classes = 10
-batch_size = 32
-
-# 期望输入数据尺寸: (batch_size, timesteps, data_dim)
-# 请注意，我们必须提供完整的 batch_input_shape，因为网络是有状态的。
-# 第 k 批数据的第 i 个样本是第 k-1 批数据的第 i 个样本的后续。
-model = Sequential()
-model.add(LSTM(32, return_sequences=True, stateful=True,
-               batch_input_shape=(batch_size, timesteps, data_dim)))
-model.add(LSTM(32, return_sequences=True, stateful=True))
-model.add(LSTM(32, stateful=True))
-model.add(Dense(10, activation='softmax'))
-
-model.compile(loss='categorical_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-
-# 生成虚拟训练数据
-x_train = np.random.random((batch_size * 10, timesteps, data_dim))
-y_train = np.random.random((batch_size * 10, num_classes))
-
-# 生成虚拟验证数据
-x_val = np.random.random((batch_size * 3, timesteps, data_dim))
-y_val = np.random.random((batch_size * 3, num_classes))
-
-model.fit(x_train, y_train,
-          batch_size=batch_size, epochs=5, shuffle=False,
-          validation_data=(x_val, y_val))
-```
-
-
-
 # Keras 函数式 API
 
 Keras 函数式 API 是定义复杂模型（如多输出模型、有向无环图，或具有共享层的模型）的方法。
@@ -1181,7 +904,7 @@ processed_sequences = TimeDistributed(model)(input_sequences)
 
 模型结构如下图所示：
 
-<img src="/home/ubuntu16/Deep-learning-tutorial/keras/imgs/multi-input-multi-output-graph.png" width=400/>
+<img src="imgs/multi-input-multi-output-graph.png" width=400/>
 
 让我们用函数式 API 来实现它。
 
@@ -1229,19 +952,19 @@ main_output = Dense(1, activation='sigmoid', name='main_output')(x)
 model = Model(inputs=[main_input, auxiliary_input], outputs=[main_output, auxiliary_output])
 
 # 编译模型，并给辅助损失分配一个 0.2 的权重
-# 如果要为不同的输出指定不同的 `loss_weights` 或 `loss`，可以使用列表或字典。
 # 在这里，我们给 `loss` 参数传递单个损失函数，这个损失将用于所有的输出。
 # 模型将最小化的误差值是由 `loss_weights` 系数加权的*加权总和*误差。
 model.compile(optimizer='rmsprop', loss='binary_crossentropy',
               loss_weights=[1., 0.2])
 
 # 我们可以通过传递输入数组和目标数组的列表来训练模型：
+# 注意这种方法要求你的标签也是独立的两个列表
+# 验证集生成器该如何解决？
 model.fit([headline_data, additional_data], [labels, labels],
           epochs=50, batch_size=32)
-
 ```
 
-
+**Note:** 如果要为不同的输出指定不同的 `loss_weights` 或 `loss`，可以使用列表或字典。
 
 ```python
 # 由于输入和输出均被命名了（在定义时传递了一个 `name` 参数），我们也可以通过以下方式编译模型：
@@ -1253,8 +976,13 @@ model.compile(optimizer='rmsprop',
 model.fit({'main_input': headline_data, 'aux_input': additional_data},
           {'main_output': labels, 'aux_output': labels},
           epochs=50, batch_size=32)
-
 ```
+
+example:<https://www.pyimagesearch.com/2018/06/04/keras-multiple-outputs-and-multiple-losses/>
+
+#### 权重根据迭代次数调整
+
+<https://github.com/keras-team/keras/issues/10358>
 
 
 
@@ -1654,6 +1382,16 @@ __参数__
 __返回__
 
 预测值的 Numpy 数组（或数组列表）。
+
+
+
+**Note:the difference between the predict and predict_on_batch**
+
+The difference lies in when you pass as `x` data that is larger than one batch.
+
+[`predict`](https://github.com/fchollet/keras/blob/master/keras/engine/training.py#L1476) will go through all the data, *batch by batch*, predicting labels. It thus internally does the splitting in batches and feeding one batch at a time.
+
+[`predict_on_batch`](https://github.com/fchollet/keras/blob/master/keras/engine/training.py#L1612), on the other hand, assumes that the data you pass in is exactly one batch and thus feeds it to the network. It won't try to split it (which, depending on your setup, might prove problematic for your GPU memory if the array is very big)
 
 ------
 

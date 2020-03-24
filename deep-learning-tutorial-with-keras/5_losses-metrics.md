@@ -8,7 +8,7 @@
 
 - 你可以传递一个现有的损失函数名
 - 或者一个 TensorFlow/Theano 符号函数。**该符号函数为每个数据点返回一个标量，实际的优化目标是所有数据点的输出数组的平均值。**
-  - *也就是说，符号函数计算的并不是$L$, 而是每一个$L_i$, 返回的是由所有$L_i$ 组成的一维张量（如果y是多维的，各维度误差计算公式不变，最后沿其维度轴取均值）。评价函数也是如此*。
+  - *也就是说，符号函数计算的并不是$L$, 而是每一个$L_i$, 返回的是由所有$L_i$ 组成的一维张量（如果y是多维的，各维度误差计算公式不变，最后沿其维度轴取均值,如果是2维，N个数据，相当于算2N个数据点的误差均值）。评价函数也是如此*。
 
 传入函数名：
 
@@ -192,7 +192,9 @@ pyplot.show()
 
 ### 1.1.3 分类问题损失函数 
 
-待整理：<https://zhuanlan.zhihu.com/p/39239829
+待整理：[https://yuanxiaosc.github.io/2018/07/01/%E4%BA%8C%E5%88%86%E7%B1%BB%E3%80%81%E5%A4%9A%E5%88%86%E7%B1%BB%E4%B8%8E%E5%A4%9A%E6%A0%87%E7%AD%BE%E9%97%AE%E9%A2%98%E7%9A%84%E5%8C%BA%E5%88%AB%E2%80%94%E2%80%94%E5%AF%B9%E5%BA%94%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E7%9A%84%E9%80%89%E6%8B%A9/](https://yuanxiaosc.github.io/2018/07/01/二分类、多分类与多标签问题的区别——对应损失函数的选择/)
+
+<https://zhuanlan.zhihu.com/p/48078990>
 
 #### 1. hinge (合页损失)
 
@@ -988,6 +990,7 @@ Keras为回归问题提供的四个内置性能评估指标及一个Loss functio
 **Remark：**
 
 - 准确性是一个特别的性能指标，无论您的问题是二元还是多分类问题，都可以指定“ *acc* ”指标来评估准确性。
+- 多分类不能使用binary_crossentropy 作为损失函数 <https://stackoverflow.com/questions/41327601/why-is-binary-crossentropy-more-accurate-than-categorical-crossentropy-for-multi/41913968>
 
 **实例：**
 
@@ -1155,7 +1158,11 @@ def get(identifier):
 
 **Remark:**
 
-- 之前定义的误差参数都是预测值与真值之间的误差，即点与点之间的误差，接下来的参数大多相对于点预测值/预测误差 相对原始数据平均值定义的，即点对全。
+- 之前定义的误差参数都是预测值与真值之间的误差，即点与点之间的误差，接下来的参数大多相对于点预测值/预测误差 **相对原始数据平均值定义的**，即点对全。
+
+#### 0.  RMSE
+
+Root Mean Square Error (RMSE) is the standard deviation of the residuals (prediction errors). Residuals are a measure of how far from the regression line data points are; RMSE is a measure of how spread out these residuals are. In other words, it tells you how concentrated the data is around the line of best fit.
 
 #### 1. MedAE: Media Absolute Error (中位数绝对误差)
 
@@ -1164,6 +1171,10 @@ MedAE = media(|y_{1true}-y_{1pred}|,\dots, |y_{ntrue}-y_{npred}|)
 $$
 
 优点：用于包含异常值的数据的衡量
+
+
+
+
 
 #### 2. R-square: Coefficient of determination (决定系数)
 
@@ -1189,9 +1200,10 @@ SST = \sum(y_{true}-y_{mean})^2
 $$
 解释：
 
-- 从残差的角度：第二项的分子为使用模型预测值产生的误差，分母为采用均值作为预测值产生的误差（基准值），当模型预测值为真值是模型最优，第二项值为0，最差是模型预测值为均值，第二项值为1
-
-- 从方差的角度：若第二项分子分母同时除以样本数n，则分子为MSE，分母为样本方差，表征原始数据的离散程度。MSE除以样本方差用来消除原始数据离散程度对结果造成的影响，这样当原始数据集离散程度过大或过小时，对应的缩小或放大误差，使得最终都能得到类似的$R^2$值。
+- 从残差的角度：第二项的分子为使用模型预测值产生的误差，分母为采用均值作为预测值产生的误差（基准值），当模型预测值为真值是模型最优，第二项值为0，最差是模型预测值为均值（以均值作为标签分布的参数估计，一般不能再差了），上下方差相同，第二项值为1
+- 从方差的角度：若第二项分子分母同时除以样本数n，则分子为MSE，分母为样本方差，表征原始数据的离散程度。MSE除以样本方差**用来消除原始数据离散程度对结果造成的影响**，这样当原始数据集离散程度过大或过小时，对应的缩小或放大误差，使得最终都能得到类似的$R^2$值。
+- 同样的MSE, 如果方差越大，R2也会越大，说明模型拟合能力强，在方差大的数据集上都能拟合好；
+- （我们不同的时序数据，标签就是不同的，数据分布也不同）
 
 标准：
 
@@ -1199,11 +1211,29 @@ $$
 
 优点：
 
-- 消除样本分布不均衡造成的对误差的影响（交叉验证时样本分布可能不同）
+- 消除样本分布不均衡造成的对误差的影响
 
 缺点：
 
-- 数据集样本数量越大，$R^2$越大，所以不能用于不同数据集的比较，无法定量说明准确程度。（可以用于交叉验证？样本数量相同但分布可能不同，防止由于数据分布不同产生不同的预测误差）
+- 数据集样本数量越大，$R^2$越大，所以不能用于不同数据集的比较，无法定量说明准确程度。
+
+
+
+**补充资料：**
+
+- R-squared (R2) is a statistical measure that represents the proportion of the variance for a dependent variable that's explained by an independent variable or variables in a [regression ](https://www.investopedia.com/terms/r/regression.asp)model. 
+  $$
+  \begin{aligned} &\text{R}^2 = 1 - \frac{ \text{Explained Variation} }{ \text{Total Variation} } \\ \end{aligned}
+  
+  $$
+  
+
+- R-squared is always between 0 and 100%:
+
+  - 0% indicates that the model explains none of the variability of the response data around its mean.
+  - 100% indicates that the model explains all the variability of the response data around its mean.
+
+  In general, the higher the R-squared, the better the model fits your data. However,
 
 #### 3. Adjusted R-square: Degree-of-freedom adjusted coefficient of determination (校正决定系数)
 
@@ -1241,6 +1271,12 @@ $$
 缺点：
 
 - 不同数据集之间，SSE的值没有意义，因为其值不仅取决于预测值，还取决于样本数量
+
+
+
+
+
+
 
 
 
@@ -1321,12 +1357,14 @@ def mean_squared_error(y_true, y_pred):
     L = \frac{e_{11}^2+e_{12}^2 + e_{21}^2+e_{22}^2 + ``` + e_{n1}^2+e_{n2}}{2n}
     $$
     
+  我们也可以直接计算，只返回一个数据点，结果是一样的： 
   
-  我们也可以直接计算，只返回一个数据点，结果是一样的：
+  y_true y_pred 都是和定义时传入的维度一样，只不过你返回一个列表时，他会再求一次平均，但如果返回一个数，就不会再取平均了
   
   ```python
     def mean_squared_error(y_true, y_pred):
         return K.mean(K.square(y_pred - y_true))
+  # 这里的mean是除以2N,返回一个值
   ```
   
 - **使用自定义评价函数时**，对于使用`load_model()`导入的模型将无法识别自定义函数的 字符串变量，因此要预先定义一个字典，导入模型时将自定义的关键字传入：
@@ -1336,9 +1374,27 @@ def mean_squared_error(y_true, y_pred):
                   'R_SQUARE': R_SQUARE, 'val_R_SQUARE': R_SQUARE}
                   
   best_model = load_model(model_name, custom_objects=dependencies)
-  ```
-
   
+  ```
+```python
+  
+
+### 欧几里得距离
+
+​```python
+# 结果是mse的2倍，因为这里的K.sum 分子为N, 而mse为2N
+def weighted_loss(y_true, y_pred, w1=1, w2=1):
+    dist1 = w1*K.square(y_true[:,0]-y_pred[:,0])
+    dist2 = w2*K.square(y_true[:,1]-y_pred[:,1])
+    return K.sum(dist1 + dist2)
+
+def rse(y_true, y_pred):
+    return K.sum(K.sqrt(K.square(y_true[:,0]-y_pred[:,0])+K.square(y_true[:,1]-y_pred[:,1])))
+```
+
+
+
+
 
 #### 均方根误差（RMSE）
 
@@ -1629,9 +1685,12 @@ x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,
  [ 3  4  5]
  [ 0  1  2]
  [18 19 20]]
+
 [[ 6  7  8]
  [15 16 17]]
+
 [1, 0, 1, 0, 1, 0, 0, 1]
+
 [0, 1]
 ```
 
