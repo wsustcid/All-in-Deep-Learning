@@ -2,7 +2,7 @@
 
 This project is to help people get started with deep learning from scratch and further be able to apply deep learning techniques to their own research fields.
 
-
+<img src=./Reference-Book/cover.png />
 
 ## 1. Set Your Deep Learning Environments
 
