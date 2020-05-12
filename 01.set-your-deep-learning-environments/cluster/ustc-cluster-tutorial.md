@@ -1,10 +1,40 @@
 # 集群学习
-
 copyright： <zzpzkd@mail.ustc.edu.cn> & <wsustcid@mail.ustc.edu.cn>
 
+[官方使用教程](http://mccipc.ustc.edu.cn/mediawiki/index.php/Gpu-cluster-manual)
+
+常用指令合集：
+```sh
+# 登录集群
+ssh YOUR_USER_NAME@192.168.9.99 # 内网
+ssh -p 39099 YOUR_USER_NAME@202.38.69.241 # 外网
+
+# 进入调试节点开启容器进行调试
+ssh g101
+sudo docker images
+startdocker -u "-it -v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/xx" -c /bin/bash bit:5000/deepo_9
+sudo docker ps -a
 
 
-[TOC]
+# 提交任务并查看
+ssh gwork
+# 编写pbs;startdocker -u "-v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/UltraNet/pointnet" -c "python train.py" bit:5000/deepo
+qsub xx.pbs
+qstat
+chk_gpuused # 查看gpu使用情况
+chk_gpu <结点名> # 查看可用资源
+qdel
+sudo chk_res <结点名> <用户名> # 查看job资源是否正确释放
+
+# 数据传输
+
+# 使用tensorborad
+id # 获取自己的用户id, port即为自己的id
+tensorboard --logdir <log-path> --port id # gwork运行
+#在外网访问 202.38.69.241:id,
+#内网则可以直接访问 192.168.9.99:id
+
+```
 
 ## 0. 预备知识
 
@@ -50,76 +80,14 @@ copyright： <zzpzkd@mail.ustc.edu.cn> & <wsustcid@mail.ustc.edu.cn>
 - 分布式是个工作方式，把一个业务分拆多个子业务，部署在不同的服务器上
 - 分布式与集群的比喻： 小饭店原来只有一个厨师，切菜洗菜备料炒菜全干。后来客人多了，厨房一个厨师忙不过来，又请了个厨师，两个厨师都能炒一样的菜，这两个厨师的关系是集群。为了让厨师专心炒菜，把菜做到极致，又请了个配菜师负责切菜，备菜，备料，厨师和配菜师的关系是分布式，一个配菜师也忙不过来了，又请了个配菜师，两个配菜师关系是集群
 
-### Linux 文件结构
-
-在Linux中所有的文件都是基于目录的方式存储的。一切都是目录，一切都是文件。
-
-**以Ubuntu系统为例：**我们打开终端后，可以看到如下界面：
-
-<img src=imgs/0_1.png />
-
-每行命令提示符$之前的内容为：`用户名@主机名：当前所在目录`
-
-- 主机名只有一个，因为我们只有一个主机，但用户名可以有多个，因为我们一台主机我们可以建立多个账户；
-- 所有linux系统的根目录文件都和上述截图类似，但后期可能存在多个用户，因此各根目录下的文件夹会根据其自身属性为各个用户根据用户名创建不同的文件夹（有的文件是所有用户共享的，则不会创建）
-- 比如终端打开后默认`home`目录~，其实是当前用户的home目录，其绝对路径为`/home/ubuntu16/`
-
-```python
-/是一切目录的起点，如大树的主干。其它的所有目录都是基于树干的枝条或者枝叶。ubuntu中硬件设备如光驱、软驱、usb设备都将挂载到这颗繁茂的枝干之下，作为文件来管理。
-
-/home: 用户的主目录，在Linux中，每个用户都有一个自己的目录，一般该目录名是以用户的账号命名的。
-/media: ubuntu系统挂载的硬盘、usb设备，存放临时读入的文件。
-/tmp: 这个目录是用来存放一些临时文件的，所有用户对此目录都有读写权限。
-
-/bin: bin是Binary的缩写。存放系统中最常用的可执行文件（二进制）。
-/boot: 这里存放的是Linux内核和系统启动文件，包括Grub、lilo启动器程序。
-/dev: dev是Device(设备)的缩写。该目录存放的是linux的外部设备，如硬盘、分区、键盘、鼠标、usb等。
-/etc: 这个目录用来存放所有的系统管理所需要的配置文件和子目录，如passwd、hostname等。
-/lib: 存放共享的库文件，包含许多被/bin和/sbin中程序使用的库文件。
-/lost+found: 这个目录一般情况下是空的，当系统非法关机后，这里就存放了一些零散文件。
-/mnt: 作为被挂载的文件系统得挂载点。
-/opt: 作为可选文件和程序的存放目录，主要被第三方开发者用来简易安装和卸载他们的软件。
-/proc: 这个目录是一个虚拟的目录，它是系统内存的映射，我们可以通过直接访问这个目录来获取系统信息。这里存放所有标志为文件的进程，比较cpuinfo存放cpu当前工作状态的数据。
-/root: 该目录为系统管理员，也称作超级权限者的用户主目录。
-/sbin: s就是Super User的意思，这里存放的是系统管理员使用的系统管理程序，如系统管理、目录查询等关键命令文件。
-/ srv: 存放系统所提供的服务数据。
-/sys: 系统设备和文件层次结构，并向用户程序提供详细的内核数据信息。
-    
-/usr: 存放与系统用户有关的文件和目录。
-/usr 目录具体来说：
-/usr/X11R6: 存放X-Windows的目录；
-/usr/games: 存放着XteamLinux自带的小游戏；
-/usr/bin: 用户和管理员的标准命令；
-/usr/sbin: 存放root超级用户使用的管理程序；
-/usr/doc: Linux技术文档；
-/usr/include: 用来存放Linux下开发和编译应用程序所需要的头文件，for c 或者c++；
-/usr/lib: 应用程序和程序包的连接库；
-/usr/local: 系统管理员安装的应用程序目录；
-/usr/man: 帮助文档所在的目录；
-/usr/src: Linux开放的源代码；
-
-
-/var: 长度可变的文件，尤其是些记录数据，如日志文件和打印机文件。
-/var/cache: 应用程序缓存目录；
-/var/crash: 系统错误信息；
-/var/games: 游戏数据；
-/var/log: 日志文件；
-/var/mail: 电子邮件；
-/var/tmp: 临时文件目录；
-    
-注: ubuntu严格区分大小写和空格，所以Sun和sun是两个不同的文件。
-```
 
 ### 脚本
 
 **编程语言的分类：**
 
 由于计算机不能理解任何除机器语言以外的语言，所以要把程序员通过高级语言写的程序 翻译 成机器语言，计算机才能执行，这种 “翻译” 的方式有两种，一种是**编译**， 一种是**解释**。由此诞生了两种类型的语言：编译性语言与解释性语言。
-
 编译性语言的代表：C/C++、Pascal/Object Pascal（Delphi）等
-
 解释性语言的代表：JavaScript、VBScript、Perl、Python、Ruby、MATLAB 等
-
 两种类型的语言的区别主要在于翻译的时间点不同：
 
 - 编译性语言在程序执行之前进行翻译，称之为“编译”，把程序编译成机器语言的可执行文件，如.exe文件，以后运行时就不用重新翻译了，直接使用翻译后的结果。即 一次编译，多次使用，所以编译性语言程序的执行效率高。（编译编译型语言的工具我们通常称之为**编译器**）
@@ -239,8 +207,6 @@ Remark:
 - 该集群计算节点本身没有安装任何计算软件，他们把常用的软件环境封装在[Docker 容器](http://mccipc.ustc.edu.cn/mediawiki/index.php/Dcoker-images)中。
 - 该集群使用torque PBS管理计算job，job以docker方式进行运行，禁止以docker方式以外的方式运行job
 - 集群提供了一些经典的用于深度学习的镜像，如果仍不能满足要求，可以根据后续章节要求生产自己的镜像；
-- 集群提供了一些数据集，如果用户有自己的数据需要提交到数据集，可以向管理员申请，获得批准后将数据集上传到 /gpub/temp，上传完毕后通知管理员处理，将不会占用自己的空间配额。/gpub/temp只是临时空间，会定期清理，重要数据不可以放在这里长存。
-
 
 
 **节点类型：**
@@ -282,7 +248,7 @@ chk_gpu_output  dev                gdata   gpub    lib64  mnt      proc     sbin
 
 
 
-**文件系统登录与文件传输：**
+### 使用Linux文件系统登录与文件传输：
 
 如何通过客户端连接进入ghome下自己的文件夹和gdata下自己的文件夹：
 
@@ -300,6 +266,70 @@ chk_gpu_output  dev                gdata   gpub    lib64  mnt      proc     sbin
   具体操作结果如下图：
 
 <img src=imgs/sftp.png width=400>
+
+
+
+### 使用Putty
+
+**安装putty**
+
+```python
+sudo apt-get install putty
+```
+
+
+
+**设置：**
+
+```python
+- Session/Host Name: 202.38.69.241
+- Session/port: 39099
+- Session/saved_sessions: ustc_cluster-> save (下次可直接双击连接或load->open；修改设置后记得save)
+- window: columns: 90; rows: 90
+- window/fonts: Font used for ordinary text: client:Ubuntu Mono 14
+- Connection: keepalives: 60
+- connection/data: username: wangshuai
+- Session/saved_sessions: ustc_cluster-> save 
+```
+
+**参考**
+
+<https://blog.csdn.net/skypeGNU/article/details/11655713>
+
+https://www.cnblogs.com/yuwentao/archive/2013/01/06/2846953.html
+
+
+
+### 使用SCP进行文件传输
+- 专门用于数据传输和解压缩的节点Gproc，均可以从gwork直接ssh过去，Gproc还可以直接从外网访问（202.38.69.241:37240），以便于传输数据。(使用gwork节点-39099端口，数据传输和解压会非常慢) --问题：连不上
+- 集群提供了一些数据集，如果用户有自己的数据需要提交到数据集，可以向管理员申请，获得批准后将数据集上传到 /gpub/temp，上传完毕后通知管理员处理，将不会占用自己的空间配额。/gpub/temp只是临时空间，会定期清理，重要数据不可以放在这里长存。
+
+```python
+## 安装openssh
+# 查看ssh是否安装和启动：
+ssh localhost # 出现 port 22:Connection refused 说明ssh-server 未安装或未启动
+# 查看是否有sshd进程
+ps -e | grep ssh
+# 没有的话安装
+sudo apt-get install openssh-server
+
+
+## 从集群下载数据
+scp -P 39099 wangshuai@202.38.69.241:remote_file local_folder 
+## 往集群传数据
+scp -P 39099 local_file wangshuai@202.38.69.241:remote_folder 
+
+
+#参数详解
+-a	尽可能将档案状态、权限等资料都照原状予以复制
+-r	若 source 中含有目录名，则将目录下之档案亦皆依序拷贝至目的地
+-f	若目的地已经有相同档名的档案存在，则在复制前先予以删除再行复制
+-v	和大多数 linux 命令中的 -v 意思一样 , 用来显示进度 . 可以用来查看连接 , 认证 , 或是配置错误
+-C	使能压缩选项
+-P	选择端口 . 注意 -p 已经被 rcp 使用
+```
+
+
 
 
 
@@ -354,6 +384,13 @@ sudo -l
 /usr/bin/nvidia-docker attach *
 /usr/bin/docker stop *
 """
+# 如何关闭后不销毁容器（强制关闭？） 然后stop 容器如何不销毁容器方便下次使用？
+# 停止正在运行的容器
+sudo docker stop CONTAINER_ID/CONTAINER_NAME
+# 重启已经关闭的容器
+sudo docker start CONTAINER_ID/CONTAINER_NAME
+
+# 一下命令有问题，需要输入密码，待研究
 # 可以看到，依然保留了用户执行nvidia-docker的权利，只是强制加两个参数--rm（退出后即销毁容器） 和 -u，必须以此命令开头：
 sudo nvidia-docker run --rm -u <your-id>
 # 示例：
@@ -388,7 +425,7 @@ startdocker -u "-it" -c /bin/bash bit:5000/deepo
   # 如果需要挂载更多的目录，在 `-u` 后面的引号中增加新的 `-v /XXX:/XXX` 参数就行了（注意路径要用绝对路径）
   ```
 
-- 另外，容器启动时工作目录是在容器内的根目录。你的程序里若使用的相对路径可能会出现无权限写文件的错误。可以在 `-u` 后面的引号里添加 `-w 工作目录` 设置容器中的初始工作目录（当然工作目录必须挂载到容器中）：
+- 另外，容器启动时工作目录是在容器内的根目录。你的程序里若使用的相对路径可能会出现无权限写文件的错误。可以在 `-u` 后面的引号里添加 `-w 工作目录` **设置容器中的初始工作目录**（当然工作目录必须挂载到容器中）：
 
   ```python
   # 在容器中运行 /ghome/用户名/run.sh
@@ -453,15 +490,6 @@ startdocker -u "--ipc=host -v /gpub/leftImg8bit_sequence:/gpub/leftImg8bit_seque
 
 
 
-**停止或重启容器:**
-
-```python
-# 停止正在运行的容器
-sudo docker stop CONTAINER_ID/CONTAINER_NAME
-# 重启已经关闭的容器
-sudo docker start CONTAINER_ID/CONTAINER_NAME
-```
-
 
 
 ## 4.通过 Torque PBS 提交任务
@@ -482,7 +510,6 @@ Torque 管理系统不能直接提交二进制可执行文件，需要编写一�
 #PBS    -e  /ghome/<username>/$PBS_JOBID.err
 #PBS    -l nodes=1:gpus=1:S
 #PBS    -r y
-#PBS    -q mcc
 cd $PBS_O_WORKDIR
 echo Time is `date`
 echo Directory is $PWD
@@ -555,6 +582,7 @@ qsub myjob.pbs
 
 
 ## 5.自定义docker 镜像文件
+完整镜像列表：http://mccipc.ustc.edu.cn/mediawiki/index.php/Docker-images
 
 集群系统已经提供了大多数常用的深度学习框架，deepo就是MIT创建的一个包含了几乎全部主流深度学习框架的镜像。请仔细查看集群上所有的镜像，如果仍然不能满足用户需求， 则用户可以申请创建自己的镜像，向管理员提出申请有两种方式：
 
@@ -673,23 +701,16 @@ Werkzeug         0.14.1
 wheel            0.31.1   
 ```
 
+我的镜像：bit:5000/ws-py3-tf-keras
+
 ```
+
 pip install keras_applications==1.0.7 --no-deps
 pip install keras_preprocessing==1.0.9 --no-deps
 pip install h5py==2.9.0
 ```
 
 
-
-
-
-安装putty
-
-<https://blog.csdn.net/skypeGNU/article/details/11655713>
-
-启用putty keepalive
-
-putty -> Connection -> Seconds between keepalives ( 0 to turn off ), 默认为0, 改为60
 
 
 

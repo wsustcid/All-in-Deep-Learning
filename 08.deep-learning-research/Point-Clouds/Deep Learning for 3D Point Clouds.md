@@ -1,6 +1,4 @@
 <center><font size=7>  Deep Learning for 3D Point Clouds  </font>  </center> 
-<img src=assets/Cover.jpg height=400>
-
 
 
 
@@ -18,119 +16,7 @@
 
 *Siheng Chen, Baoan Liu, Chen Feng, Carlos Vallespi-Gonzalez, Carl Wellington (Mitsubishi Electric Research Laboratories & Uber Advanced Technologies Group)*
 
-### I. INTRODUCTION AND MOTIVATION
 
-An autonomous system typically includes the sensing, map creation, localization, perception, prediction, routing, motion- planning, and control modules.
-
-<img src=assets/1_1.png > 
-
-A high- definition map is created offline. At runtime, the online system is given a destination. The system then senses its environment, localizes itself to the map, perceives the world around it and makes corresponding predictions of future motion for these objects. The motion planner uses these predictions to plan a safe trajectory for an autonomous vehicle (AV) to follow the route to the destination that is executed by the controller.
-
-
-
-**3D point cloud processing:**
-
-- 3D point cloud processing is the process of analyzing and modifying a 3D point cloud to optimize its transmission, storage and quality through various mathematical and computational algorithms. 
-- Even though the processing algorithms could be significantly different, many processing tasks are naturally extended from 1D signal processing and 2D image processing. 
-  - 3D point cloud compression is the 3D counterpart of image compression that aims to reduce the cost for storage or transmission of a 3D point cloud; 
-  - 3D point cloud denoising is the 3D counterpart of image denoising that aims to remove noise from a 3D point cloud; 
-  - 3D point cloud registration is the 3D counterpart of image registration that aims to align two or more 3D point clouds of the same scene; 
-  - and 3D point cloud downsampling and upsampling are the 3D counterpart of image scaling that aims to change the resolution (number of points) in a 3D point cloud. 
-
-**3D point cloud learning:**
-
-- 3D point cloud learning is the process of interpreting and understanding a 3D point cloud. 
-- With the powerful tools of deep neural networks, computer vision researchers aim to extend the success from images and videos to 3D point clouds. 
-- Two primary learning problems are 3D point cloud recognition and segmentation. 
-  - Similarly to the cases for 2D images, 3D point cloud recognition aims to classify a given 3D point cloud into a predefined class category 
-  - and 3D point cloud segmentation aims to partition a given 3D point cloud into multiple segments. 
-- Due to the irregular format of 3D point clouds, one of the biggest challenges for designing a learning algorithm is to formulate efficient data structures to represent 3D point clouds.  
-  - Some algorithms transform 3D point clouds to regular 3D voxels, so that 3D convolutions can be used for the analysis; however, they have to make a trade-off between resolution and memory. 
-  - To handle raw point clouds directly, PointNet [7] uses point-wise multilayer perceptrons (MLPs) and max-pooling to ensure the permutation invariance. After that, a series of 3D deep learning methods follow PointNet as their base networks.
-
-
-
-### II. KEY INGREDIENTS OF 3D POINT CLOUD PROCESSING AND LEARNING
-
-#### A. Properties
-
-**Real-time LiDAR sweeps:**
-
-- One real-time LiDAR sweep can naturally be organized on a 2D image, whose x-axis is the time stamp and y-axis is the laser ID. 
-- We thus consider each individual real-time LiDAR sweep as an organized 3D point cloud. 
-- For example, a Velodyne HDL-64E has 64 separate lasers and each laser fires thousands of times per second to capture a 360-degree field of view. We thus obtain a set of 3D points associated with 64 elevation angles and thousands of azimuth angles. (In a real-time LiDAR sweep, the vertical resolution is usually much lower than the horizontal resolution)
-- Each collected 3D point is associated with a range measurement, an intensity value and a high precision GPS time stamps. 
-
-
-
-#### B. Matrix representations
-
-- raw points.  
-- 3D voxelization.
-- Range view. 
-- Bird’s-eye view.
-
-<img src=assets/1_2.png >
-
-#### C. Representative tools
-
-- Non-deep-learning methods. 
-- Convolutional neural networks
-- PointNet-based methods.
-- Graph-based methods. ([11]-[16])
-
-### III. 3D POINT CLOUD PROCESSING FOR HIGH-DEFINITION MAP CREATION
-
-#### A. Overview of high-definition map creation module
-
-<img src=assets/1_4.png />
-
-Fig. 4: A standard HD map creation system includes two core components: 3D point cloud stitching and semantic feature extraction. 3D point cloud stitching usually adopts graph-based SLAM with hierarchical refinement; and semantic feature extraction contains iterative procedures of machine learning and human supervision. A key component in graph-based SLAM is a pose graph, modeling the relations among LiDAR poses. The nodes are LiDAR poses and edges reflecting the misalignment level between two LiDAR poses. The final outputs include a point-cloud map, which is a dense 3D point cloud, as well as a traffic-rule-related semantic feature map, containing the positions of landmarkers, traffic signs and traffic lights.
-
-- Priors for localization. The
-- Priors for perception
-- Priors for prediction
-- Priors for motion planning
-
-### IV. 3D POINT CLOUD PROCESSING FOR LOCALIZATION
-
-#### A. Overview of localization module
-
-the localization module finds ego position of an autonomous vehicle relative to the reference position in the HD map. It consumes the real-time measure- ments from multiple sensors, including LiDAR, IMU, GPS, odometer, cameras, as well as the HD map; see Figure 5. 
-
-<img src=assets/1_5.png >
-
-Because of the 3D representation of an HD map, the ego position of an autonomous vehicle is a 6DOF pose (translation and rotation), which is a rigid transformation between the map frame and the LiDAR frame.
-
-The importance of the localization module to autonomous driving is that it bridges the HD map to the other modules in an autonomy system. For example, by projecting the HD map priors, such as the lane geometries to the LiDAR frame, the autonomous vehicle gains the knowledge of which lane itself drives on and which lanes the detected traffics are on. 
-
-High precision indicates the error of translation should be at the centimeter level and the error of rotation angle should be at the micro-radian level.
-
-#### B. Map-based localization
-
-**LiDAR-to-map registration.** The LiDAR-to-map registra-
-tion component is to directly estimate the LiDAR pose by matching the LiDAR sweep to the the point-cloud map. Let
-
-**Multisensor Fusion.** The multisensor fusion component is
-to estimate a robust and confident pose from measurements of multiple sensors, including IMU, GPS, odometer, cameras, as well as the poses estimated by the LiDAR-to-map regis- tration module. The
-
-### V. 3D POINT CLOUD PROCESSING FOR PERCEPTION
-
-#### A. Overview of perception module 
-
-The perception module is the visual system of an autonomous vehicle that enables the perception of the surrounding 3D environment. The input of the perception module usually includes the measurements from cameras, LiDAR, RADAR and ultrasound, as well as the ego- motion pose output from the localization module and the priors from the HD map. The outputs of the perception module are typically traffic light states and objects’ 3D bounding boxes with tracks.
-
-Depending on the mechanism to fuse those modalities, a perception module can be categorized into late fusion and early fusion.
-
-<img src=assets/1_6.png >
-
-Each pipeline includes the detection component and the association and tracking component. The detection component finds bounding boxes and the association and tracking component tracks bounding boxes across frames to assign a unique identity for each individual object. A late- fusion module unifies the bounding box information from multiple pipelines and outputs a final 3D bounding-boxes with tracks.
-
-To estimate traffic light states, a traffic light state estimator extracts the traffic light regions from images according to the position priors in an HD map and then it uses machine learning techniques to analyze the image and identify the traffic light state.
-
-The industry has adopted the late-fusion-based approach for decades
-
-A robust perception module usually includes multiple intermediate components, such as lane detection, 2D object detec- tion, 3D object detection, semantic segmentation and object tracking, to achieve the final goal. Among those components, 3D object detection is particularly interesting and challenging because it needs to handle real-time LiDAR sweeps and can directly produce the 3D bounding boxes for all objects in the scene. 
 
 #### B. 3D object detection 
 
@@ -194,6 +80,10 @@ in academia are the precision- recall (PR) curve and average precision (AP); how
 <img src=assets/2_1.png >
 
 These properties of point cloud are very challenging for deep learning, especially convolutional neural networks (CNN). These is because convolutional neural networks are based on convolution operation which is performed on a data that is ordered, regular and on a structured grid. Early approaches overcome these challenges by converting the point cloud into a structured grid format, section 3. However, recently re- searchers have been developing approaches that directly uses the power of deep learning on raw point cloud, see section 4, doing away with the need for conversion to structured grid.
+
+
+
+
 
 ### III. Structured grid based learning
 

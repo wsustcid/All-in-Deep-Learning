@@ -1,0 +1,124 @@
+﻿Model Name,Description,Prevents Overfitting,Handles Outliers,Handles several features,Adaptive Regularization,Large Dataset,Nonlinear,Interpretability Score,When to Use,When to Use Expanded,Advantages,Disadvantages,Sklearn Package,Required Args,Helpful Args,Variations
+LinearRegression,Ordinary Least Squares algorithm,,,,,,,5,"Highly interpretable, no introduced bias","-Data consists of few outliers
+-Little variance between output labels
+-All of the input features are not only independent but also are not correlated.","-Easy to interpret results
+-Low complexity level
+","-At risk of multicolinearity if input features are correlated
+-Small errors/outliers in target values can drastically impact model",linear,None,None,None
+Ridge,Ordinary Least Squares with added L2 regularization term. The weight of the regularization term is controlled by an additional alpha argument.,checked,,,,,,4,Prevent overfitting,"-Data consists of few outliers
+-May be some correlation between input features
+-Avoid overfitting
+-Want to use all of the features in order to make predictions","-Easy to interpret results
+-Less affected by correlated features
+-Prevents overfitting and decreases variance of the learned weights","-In lowering variance, incorporates a degree of bias into the model
+-Can be difficult to tune alpha to attain a desirable balance between OLS and regularization term",linear,None,alpha (controls strength of regularization term),RidgeCV
+Lasso,Ordinary Least Squares with added L1 regularization term. The weight of the regularization term is controlled by an additional alpha argument. The weight of the OLS term is inversely related to the number of samples.,checked,,checked,,,,4,"Only a few features are important, feature selection","-Data consists of few outliers
+-May be some correlation between input features
+-Want to give more weight to a few important features and don't mind ignoring less important features
+-Feature selection","-Reduces number of features that model uses
+-Can handle large amounts of features
+-Can often be used as a preliminary test to perform feature selection","-In lowering variance, incorporates a degree of bias into the model.
+-Can be difficult to tune alpha to attain a desirable balance between OLS and regularization term",linear,None,alpha (controls strength of regularization term),"LassoCV
+lasso_path
+LassoLarsCV
+LassoLarsIC
+MultiTaskLasso"
+ElasticNet,Ordinary Least Squares with both an L1 and L2 regularization term. The weights of the L1 vs. L2 regularization terms are controlled by an l1_ratio parameter.,checked,,checked,,,,3,Blend Ridge and Lasso,"-Data consists of few outliers
+-May be some correlation between input features
+-Avoid overfitting 
+-Feature selection",-Incorporate the feature selection abilities of Lasso with the regularization abilities of Ridge.,"-In lowering variance, incorporates a degree of bias into the model.
+-Can be difficult to tune alpha to attain a desirable balance between OLS and regularization terms
+-Higher computational cost than Ridge or Lasso",linear,None,"alpha (controls strength of regularization terms)
+l1_ration (controls ratio between L1 and L2 regularization terms)","ElasticNetCV
+MultiTaskElasticNet"
+Lars (Least Angle Regression),"A forward stepwise regression which alters the weights of the features most correlated to the output label at each step. As the steps progress, other features become just as correlated. When this happens, the algorithm updates to move in the direction determined by the commutative angles of those features' weights.",,,checked,,,,4,More features than data samples,"-More input features than data samples
+-Data consists of few outliers
+-Little variance between output labels","-Weights of equally correlated features are updated at similar rates
+-Numerically and computationally efficient for many features
+-Interpretable results and training steps",-Noise or small errors/outliers in target values can drastically impact model,linear,None,None,"lars_path
+lars_path_gram"
+OrthogonalMatchingPursuit,A forward stepwise regression which allows for the user to specify a max number of nonzero coefficients or a target error value to achieve.,,,checked,,,,4,Feature selection,-Looking to select N most important features to represent a model composed of several features,"-Can determine features most closely related to labels
+-Can specify exact number of nonzero coefficients to return","'-Limited applications
+-Not used very much (and thus not much online resources)",linear,None,"n_nonzero_coefs (sets the number of nonzero coefficients)
+tol (sets the maximum norm of the residual)",orthogonal_mp
+BayesianRidge,Similar to Ridge but the regularization parameter is tuned to fit the data during the training process.,checked,,,checked,,,2,Ridge but don't want to set regularization constant,"-Are seeking results similar to Ridge, but willing to sacrifice interpretability for time saved not having to test different regularization weights","-No need to tune alpha value
+-Adapts well to data on hand",-Less interpretable results,linear,None,None,None
+ARDRegression,BayesianRidge with sparser weight values. Almost like a version of BayesianLasso.,checked,,checked,checked,,,2,Lasso but don't want to set regularization constant,"-Are seeking results similar to Lasso, but willing to sacrifice interpretability for time saved not having to test different regularization term weights","-No need to tune alpha value
+-Adapts well to data on hand
+-Reduces weight of unimportant features","'-Less interpretable results
+-Computationally expensive (can't handle very large datasets)",linear,None,None,None
+SGDRegressor,"Fitted by minimizing a regularized empirical loss with stochastic gradient descent (SGD). The type of loss function used can be changed using the ""loss"" argument.",,,checked,,checked,,2,Number of features and samples is very large,"-Have a very large dataset and want to quickly obtain results.
+-Lots of flexibility to change between different loss functions","-Works well on large amounts of data and features
+-Customizable function that offers different loss functions","-Less interpretable results
+-Lots of parameters to tune",linear,None,"max_iter (sets the max number of SGD iterations)
+loss (the loss function to use)
+alpha (controls strength of regularization term)
+l1_ration (controls ratio between L1 and L2 regularization terms)
+learning_rate (sets the learning rate size)",None
+PassiveAggressiveRegressor,Fitted using a variant of the hinge loss. Effective for large scale learning with several data points and features.,,,checked,,checked,,1,Number of features and samples is very large,-Have a very large dataset and want to quickly obtain results.,-Works well on large amounts of data and features,"'-Less interpretable results
+-Not used very much (and thus not much online resources)",linear,None,"loss (the loss function to use)
+C (max step size)","None
+"
+RANSACRegressor,"A linear model designed to deal with outliers in the data and/or corrupted data. Iteratively fits a linear model to a subset of the data. If the model fits the inline data better than the previous model, it is saved as the best model. This is done for a specified number of iterations or until a stopping criteria is met.",,checked,,,,,4,Outliers in the labels of dataset,-Have outliers in the labels of your dataset,"-Copes better with large-size outliers in the Y direction than other outlier algorithms
+-Faster than TheilSen and scales much better with large numbers of samples","-Break down with large numbers of input features
+-Ignores all data it deems as an outlier",linear,None,"min_samples (minimum number of samples to use in each iteration)
+max_trials (max number of trials)",None
+TheilSenRegressor,A linear model designed to deal with outliers in the data and/or corrupted data. Calculates least square solutions on a number of subsamples of the data and then determines the L1 median of these calculations to choose the best model.,,checked,,,,,4,Outliers in the features of dataset,-Have outliers in the features of your dataset,-Cope better with medium-size outliers in the X direction,"-Break down with large numbers of input features
+-Ignores all data it deems as an outlier",linear,None,max_iter (maximum number of iterations to perform),None
+HuberRegressor,"A linear model designed to deal with outliers in the data and/or corrupted data. Does not ignore the outliers, but rather gives them a lower weight.",,checked,,,,,4,Outliers and want quickest algorithm,-Want quick analyses of data ignoring outliers,"'-Faster than RANSAC and TheilSen (as long as the number of samples is not too large)
+-Does not completely ignore data points it deems as outliers",-Break down with large numbers of input features,linear,None,max_iter (maximum number of iterations to perform),None
+DecisionTreeRegressor,"Develops a decision tree by splitting on the input features. Very similar to a typical decision tree, except the leave nodes correspond to linear outputs",,,,,,checked,4,Nonlinear data groups in buckets,"-Data is not linear and is composed more of ""buckets""
+-Number of samples > number of features
+-There are dependent features in the input data. DTR handles these correlations well.","-Can export tree structure to see which features the tree is splitting on
+-Handles sparse and correlated data well
+-Able to tune the model to help with overfitting problem","-Prone to overfitting, especially when the number of features is close to or greater than the number of samples",tree,None,"criterion (function the tree splits on)
+max_depth (puts a limit on the tree depth-helpful in preventing overfitting)",None
+GaussianProcessRegressor,Creates a model by taking a distribution over a number of functions fitted to the data. Updates the weight of these various functions using Baye's Rule.,,,,,,checked,2,"Nonlinear data, unsure of the data structure","-When data is either nonlinear or you are unsure of the data structure and want a model that will fit the input data well
+-Are not concerned with overfitting",-Fits very well to data of various structures,"-Very prone to overfitting and harder to prevent than DecisionTreeRegressor
+-Very computationally expensive",gaussian_process,None,kernel (specifies covariance function),None
+MLPRegressor,Functions as a neural network with multiple neurons at each layer and nonlinear activation functions between each layer. A number of parameters can be tuned to achieve optimal results,,,checked,,,checked,1,"Nonlinear data, lots of important features","-Data consists of several features and linear models struggle
+-All or most of the input features are important in making predictions","-Can learn models in real time
+-Neural networks can achieve impressive results
+-Can handle large numbers of important features","-Need to scale data
+-Difficult to interpret results
+-Lots of parameters to tune",neural_network,None,"hidden_layer_size (sets size of each hidden layer)
+activation (sets the activation function between layers)
+learning_rate (sets learning rate)
+",None
+KNeighborsRegressor,Creates a model based off of the k nearest neighbors at any given point. Where k is an input argument.,,,,,,checked,5,"Nonlinear data, interpretability is important, unimportant features","-When you are unsure of the structure of your data and want a model that will fit well
+-Not concerned with overfitting
+-Interpretability is important","-Fits very well to data of various structures
+-More interpretable than other nonlinear models","-Extremely impacted by outliers and corrupt data
+-Need several more samples than features for quality results
+-Difficulty dealing with large numbers of features",neighbors,None,n_neighbors (number of neighbors to use),None
+RadiusNeighborsRegressor,Creates a model based off of all of the nearest neighbors in a given radius r at any given point. Where r is an input argument.,,,,,,checked,5,"Nonlinear data, interpretability is important","-When you are unsure of the structure of your data and want a model that will fit well
+-Not concerned with overfitting
+-Interpretability is important","-Fits very well to data of various structures
+-More interpretable than other nonlinear models","-Extremely impacted by outliers and corrupt data
+-Need several more samples than features for quality results
+-Difficulty dealing with large numbers of features",neighbors,None,radius (radius size to use),None
+SVR,"An implementation of the support vector machine algorithm to perform regression. The kernel type can be changed between 'linear', 'poly', 'rbf', 'sigmoid', or a custom made version to change how the model learns.",,,checked,,,checked,1,"Nonlinear data, large number of unimportant features","-When you have a dataset with a large number of features
+-Want the model to learn based off of a subset of the data it deems as most important
+-Are not concerned with interpretability","-Effective with lots of features
+-Provide flexibility to test different models with kernel algorithm options","'-Very difficult to interpret results
+-Computationally expensive on large datasets
+-Problems dealing with varying scales of input data (can be avoided by scaling data)",svm,None,"kernel (sets the kernel type used in algorithm, use LinearSVR instead of 'linear' kernel)
+cache_size (set size of the kernel, larger kernels will run faster)",None
+NuSVR,Similar to SVR with the same kernel options. Difference is in the way in which the model is implemented. ,,,checked,,,checked,1,"Nonlinear data, large number of unimportant features","-When you have a dataset with a large number of features
+-Want the model to learn based off of a subset of the data it deems as most important
+-Are not concerned with interpretability","-Effective with lots of features
+-Provide flexibility to test different models with kernel algorithm options","'-Very difficult to interpret results
+-Computationally expensive on large datasets
+-Problems dealing with varying scales of input data (can be avoided by scaling data)
+-Used less in practice than SVR (so less community help)",svm,None,"kernel (sets the kernel type used in algorithm, use LinearSVR instead of 'linear' kernel)
+cache_size (set size of the kernel, larger kernels will run faster)",None
+LinearSVR,"A lower level implementation of SVR that only considers linear support vector machine solutions. But in doing so, is much more computationally efficient with large datasets.",,,checked,,checked,,2,SVR but with very large numbers of samples and/or features,'-Want to implement SVR on a very large dataset (>100k),"-Effective with lots of features
+-Scales better to large datasets than SVR and NuSVR","'-Difficult to interpret results
+-Problems dealing with varying scales of input data (can be avoided by scaling data)",svm,None,None,None
+KernalRidge,"A kernalized implementation of Ridge. Performs very similarly to SVR, but produces less sparse results.",,,checked,,,,1,Another deviation of SVR,-Want to test an algorithm alongside SVR that optimizes a different loss function,-Effective with lots of features,"'-Used less than SVR in practice
+-Very difficult to interpret results
+-Problems dealing with varying scales of input data (can be avoided by scaling data)",kernel_ridge,None,None,None
+IsotonicRegression,Fits a piece-wise line to the data that is nondecreasing. Uses the mean squared error function to fit line.,,checked,,,,checked,4,Dataset has large jumps in label values,-There are large gaps between the values in a dataset which a continuous line would have a difficult time fitting to,"-Often used to approximate predicted results from other less interpretable models
+-Can handle large variance in data points
+-Interpretable results","'-Used little in practice and little use for application
+-Is restricted to only increase (cannot handle data that is not increasing)",isotonic,None,None,None

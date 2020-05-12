@@ -1,0 +1,16 @@
+Description, Brief description of the model
+Prevents Overfitting, Model easily tuned to prevent overfitting
+Handles Outliers, Model intended to handle outliers
+Handles Several Features, Model effectively handles large numbers of features
+Adaptive Regularization, Model adaptive learns regularization terms during training
+Large Dataset, Model computationally efficient on very large datasets (>100000 samples)
+Nonlinear, Base model fits well to nonlinear data (linear models can also fit nonlinear data but takes some tuning)
+Interpretability Score, From 5 (highly interpretable) - 1 (not interpretable). Theses really no science behind the score given; more of just my best judgement.
+When to Use, Brief keywords describing what scenarios to use
+When to Use Expanded, Expands on When to Use
+Advantages, Lists advantages of the model
+Disadvantages, Lists disadvantages of the model
+Sklearn Package, The package the model resides in in scikit-learn (import sklearn.*package*.*model*)
+Required Args, Required arguments of the model
+Helpful Args, Some of the most helpful optional arguments. See documentation for complete list of args.
+Variations, Variations off of the base model listed. See documentation for use cases of each.

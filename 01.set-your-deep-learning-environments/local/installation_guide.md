@@ -15,7 +15,7 @@
 CUDA：是Nvidia推出的只能用于自家GPU的并行计算框架。只有安装这个框架才能够进行复杂的并行计算。主流的深度学习框架也都是基于CUDA进行GPU并行加速的，几乎无一例外。还有一个叫做cudnn，是针对深度卷积神经网络的加速库。
 
 **版本选择**
-
+参考本文选择对应版本： https://blog.csdn.net/qiancaobaicheng/article/details/95226499
 1. 安装前一定要仔细检索，查看各版本间的对应关系，
 
    详见:https://blog.csdn.net/MahoneSun/article/details/80809042

@@ -1,3 +1,253 @@
+# tf
+Resources:
+- [TensorFlow 1.15 api_docs](https://www.tensorflow.org/versions/r1.15/api_docs/python/tf)
+
+- [TensorFlow newest api_docs](https://www.tensorflow.org/api_docs/python/tf)
+
+## Variable
+### tf.Variable 
+Variable 是tensorflow的一个类，里面封装了很多operations,简称ops,所以它是大写的。创建Variable对象后，必须经过初始化才可以使用(类的实例化)
+
+**关于Variable的eval()方法：**
+```python
+  # W is a random 700 x 100 variable object 
+  W = tf.Variable(tf.truncated_normal([700, 10])) 
+  with tf.Session() as sess: 
+      sess.run(W.initializer)
+  print W 
+  >> Tensor("Variable/read:0", shape=(700, 10), dtype=float32)
+  ## 
+  W = tf.Variable(tf.truncated_normal([700, 10])) 
+  with tf.Session() as sess: 
+      sess.run(W.initializer)
+  print W.eval()
+  >> [[-0.76781619 -0.67020458 1.15333688 ..., -0.98434633 -1.25692499  -0.90904623]
+```
+**Variable的assign()方法：**
+  ```python
+    W = tf.Variable(10)
+    W.assign(100) 
+    with tf.Session() as sess: 
+        sess.run(W.initializer)
+    print W.eval() 
+    # 打印的结果，是10，Why?
+
+    #一条tensorflow的规则： W.assign(100) 并不会给W赋值，assign()是一个op，所以它返回一个op object，需要在Session中run这个op object，才会赋值给W.
+    W = tf.Variable(10)
+    assign_op = W.assign(100) 
+    with tf.Session() as sess:
+      sess.run(W.initializer) # 此句可以省略，因为assign_op可以完成赋初始值操作。事实上， initializer op 是一个特殊的assign op.
+        sess.run(assign_op) 
+        print W.eval() # >> 100
+
+  ```
+
+### tf.variable_scope
+使用varibale_scope主要有两个目的：
+1. 可以使用同一个变量名创建不同的变量（貌似直接使用的话还是默认后面的transform），并多次调用同一个模块（虽然函数名不同，但其内部都是使用的同样的卷积模块，同样的，各卷积模块来自同一个卷积函数并使用scope区分，但transform函数中用的卷积模块scope是相同的，这样就需要再在外部套一个scope,形成transform_net1/conv1/）
+```python
+with tf.variable_scope('transform_net1') as sc:
+        transform = input_transform_net(point_cloud, is_training, bn_decay, K=3)
+
+with tf.variable_scope('transform_net2') as sc:
+        transform = feature_transform_net(net, is_training, bn_decay, K=64)
+```
+2. 创建变量时可以使用同一变量名，不同变量用scope区分，使用get_variable()创建变量，如果相同已经存在，不用再多次创建
+```python
+with tf.variable_scope('transform_XYZ') as sc:
+        assert(K==3)
+        weights = tf.get_variable('weights', [256, 3*K],
+                                  initializer=tf.constant_initializer(0.0),
+                                  dtype=tf.float32)
+        biases = tf.get_variable('biases', [3*K],
+                                 initializer=tf.constant_initializer(0.0),
+                                 dtype=tf.float32)
+        biases += tf.constant([1,0,0,0,1,0,0,0,1], dtype=tf.float32)
+        transform = tf.matmul(net, weights)
+        transform = tf.nn.bias_add(transform, biases)
+
+with tf.variable_scope('transform_feat') as sc:
+        weights = tf.get_variable('weights', [256, K*K],
+                                  initializer=tf.constant_initializer(0.0),
+                                  dtype=tf.float32)
+        biases = tf.get_variable('biases', [K*K],
+                                 initializer=tf.constant_initializer(0.0),
+                                 dtype=tf.float32)
+```
+## tf.Group
+#### tf.Graph()
+Graphs are used by tf.functions to represent the function's computations. Each graph contains a set of tf.Operation objects, which represent units of computation; and tf.Tensor objects, which represent the units of data that flow between operations.
+#### Methods
+**as_default()**
+This method should be used if you want to create multiple graphs in the same process. For convenience, a global default graph is provided, and all ops will be added to this graph if you do not create a new graph explicitly.
+
+  - Use this method with the with keyword to specify that ops created within the scope of a block should be added to this graph. 
+  - The default graph is a property of the current thread. If you create a new thread, and wish to use the default graph in that thread, you must explicitly add a with g.as_default(): in that thread's function.
+
+```python
+#The following code examples are equivalent:
+# 1. Using Graph.as_default():
+g = tf.Graph()
+with g.as_default():
+  c = tf.constant(5.0)
+  assert c.graph is g
+
+# 2. Constructing and making default:
+with tf.Graph().as_default() as g:
+  c = tf.constant(5.0)
+  assert c.graph is g
+```
+  - If eager execution is enabled ops created under this context manager will be added to the graph instead of executed eagerly.
+
+Returns:
+A context manager for using this graph as the default graph.
+
+
+
+# tf.data
+xxx
+# tf.keras
+xxx
+# tf.layers
+xxx
+
+# tf.losses
+主要分为两类损失(loss)，一种是针对拟合任务的MSE损失，另一种是针对分类任务的Cross Entropy损失，这两种损失根据具体的应用场景具有不同的变种。
+
+## MSE
+$$
+MSE = \frac{1}{m} \sum_{i=1}^m (\hat{y}_i-y_i)^2
+$$
+
+## Cross Entropy
+## 定义：
+$$
+CE = -\frac{1}{m} \sum_{i=1}^m y_i * log_2 \hat{y}_i
+$$
+- 这里要求label与输出值在0~1之间，将值限制在0~1之间可以通过softmax函数和sigmoid函数实现，因此对应的产生了两种损失函数；
+**交叉熵与KL散度**
+KL散度用来衡量两个分布p和q的相似度：
+$$
+D_{KL}(p||q) = \sum_{i=1}^m p(x_i) * log_2 \frac{p(x_i)}{q(x_i)} \\
+             = \sum_{i=1}^m p(x_i) * log_2 p(x_i) - \sum_{i=1}^m p(x_i) * log_2 q(x_i) \\
+             = -H(p) + H(p,q)
+$$
+- 第一项称为信息熵， 第二项便是交叉熵
+
+### tf.nn.softmax_cross_entropy_with_logits
+对于独立**互斥**离散的多分类任务(multi-class), 我们使用此类损失。即类与类之间是独立的，且每个样本只对应一个类(在某一类的上概率为1，其余为0)
+ - logits先经过softmax层转化为概率分布，然后计算交叉熵(只计算类别对应为1的损失)
+ - 因此，该函数要求每个样本的label都是一个关于类别的有效的概率分布，即使用one-hot编码；
+ - 计算损失之后输出尺寸为(batch, 1)的loss向量，因此后续还需要计算均值得到本批样本的L;(函数计算的是单个样本的交叉熵l)
+
+### tf.nn.sigmoid_cross_entropy_with_logits
+应该是使用的BCE公式：
+$$
+BCE = -\sum_{i=0}^1 y_i * log_2 \hat{y}_i = y_i * log_2 \hat{y}_i + (1-y_i) * log_2 (1-\hat{y}_i) 
+$$
+此损失函数用于衡量独立**不互斥**离散分类任务的误差(multi-label)。如多分类任务中的多目标检测任务，一个样本的标签内部可以包含多个1，代表包含多个类别被检测到。而使用sigmoid函数恰好满足此要求。
+- 该函数的输入为网络的输出logits；标签不需要进行one-hot处理；
+- 该函数的输出为 (batch, n_class) 的loss,即单独对每一个类计算CE (BCE?);最后我们再进行求均值即可；
+
+### tf.nn.sparse_softmax_cross_entropy_with_logits
+此函数是tf.nn.softmax_cross_entropy_with_logits易用版本，不再需要手动对标签进行one-hot编码：
+- 该函数的输入logits仍然是(batch, n_class)的网络输出，但label的形状是(batch,)，即每个样本的标签直接为取值为(0,n_class-1)的类别值
+
+### 区别与联系
+- 从函数表达的形式，sigmoid函数是softmax函数的一种特殊情况，对于二分类，二者计算得到的概率是相同的；因此对于二分类问题，两种损失没有区别（标签相同，概率分布相同）；计算公式不同但结果相同：logits=[0.8, 0.2], label=[1,0], sigmoid_CE=[ln0.8, ln0.8], softmax_CE=[ln0.8],计算均值后二者相同； 但对于multi-label的分类问题，sigmoid把每一个类别都当做二分类来处理；
+- tf.nn.sigmoid_cross_entropy_with_logits solves N binary classifications at once.
+-tf.losses.sigmoid_cross_entropy in addition allows to set the in-batch weights, i.e. make some examples more important than others. 
+- tf.nn.weighted_cross_entropy_with_logits allows to set class weights (remember, the classification is binary), i.e. make positive errors larger than negative errors. This is useful when the training data is unbalanced.
+
+- Just like in sigmoid family, tf.losses.softmax_cross_entropy allows to set the in-batch weights, i.e. make some examples more important than others. As far as I know, as of tensorflow 1.3, there's no built-in way to set class weights.
+
+- For sparse: Like above, tf.losses version has a weights argument which allows to set the in-batch weights.
+
+# tf.metrics
+
+# tf.saved_model
+
+# tf.train
+
+### Learning Rate
+#### 指数衰减学习率
+见pointNet代码
+
+#### 固定步数变化学习率
+```python
+def piecewise_constant(x, boundaries, values, name=None)
+
+#Example: use a learning rate that's 1.0 for the first 100001 steps, 
+# 0.5 for the next 10000 steps, and 0.1 for any additional steps.
+  global_step = tf.Variable(0, trainable=False)
+  boundaries = [100000, 110000]
+  values = [1.0, 0.5, 0.1]
+  learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
+```
+
+# tf.summary
+关于如何想keras一样输出model.summary()
+https://stackoverflow.com/questions/46560313/is-there-an-easy-way-to-get-something-like-keras-model-summary-in-tensorflow
+## Overview
+The tf.summary module provides APIs for writing summary data. This data can be visualized in TensorBoard, the visualization toolkit that comes with TensorFlow. See the [TensorBoard website](https://www.tensorflow.org/tensorboard) for more detailed tutorials about how to use these APIs, or some quick examples below.
+
+Example usage with eager execution, the default in TF 2.0:
+```python
+writer = tf.summary.create_file_writer("/tmp/mylogs")
+with writer.as_default():
+  for step in range(100):
+    # other model code would go here
+    tf.summary.scalar("my_metric", 0.5, step=step)
+    writer.flush()
+```
+
+```python
+## Example usage with tf.function graph execution:
+writer = tf.summary.create_file_writer("/tmp/mylogs")
+
+@tf.function
+def my_func(step):
+  # other model code would go here
+  with writer.as_default():
+    tf.summary.scalar("my_metric", 0.5, step=step)
+
+for step in range(100):
+  my_func(step)
+  writer.flush()
+
+##Example usage with legacy TF 1.x graph execution:
+with tf.compat.v1.Graph().as_default():
+  step = tf.Variable(0, dtype=tf.int64)
+  step_update = step.assign_add(1)
+  writer = tf.summary.create_file_writer("/tmp/mylogs")
+  with writer.as_default():
+    tf.summary.scalar("my_metric", 0.5, step=step)
+  all_summary_ops = tf.compat.v1.summary.all_v2_summary_ops()
+  writer_flush = writer.flush()
+
+  sess = tf.compat.v1.Session()
+  sess.run([writer.init(), step.initializer])
+  for i in range(100):
+    sess.run(all_summary_ops)
+    sess.run(step_update)
+    sess.run(writer_flush)
+```
+### Functions
+  - audio(...): Write an audio summary.
+  - create_file_writer(...): Creates a summary file writer for the given log directory.
+  - create_noop_writer(...): Returns a summary writer that does nothing.
+  - flush(...): Forces summary writer to send any buffered data to storage.
+  - histogram(...): Write a histogram summary.
+  - image(...): Write an image summary.
+  - record_if(...): Sets summary recording on or off per the provided boolean value.
+  - scalar(...): Write a scalar summary.
+  - text(...): Write a text summary.
+  - trace_export(...): Stops and exports the active trace as a Summary and/or profile file.
+  - trace_off(...): Stops the current trace and discards any collected information.
+  - trace_on(...): Starts a trace to record computation graphs and profiling information.
+  - write(...): Writes a generic summary to the default SummaryWriter if one exists.
+
+-----------------------------------------------
 # tf.scan
 
 
