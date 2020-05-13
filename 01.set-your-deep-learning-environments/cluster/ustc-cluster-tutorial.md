@@ -3,39 +3,6 @@ copyright： <zzpzkd@mail.ustc.edu.cn> & <wsustcid@mail.ustc.edu.cn>
 
 [官方使用教程](http://mccipc.ustc.edu.cn/mediawiki/index.php/Gpu-cluster-manual)
 
-常用指令合集：
-```sh
-# 登录集群
-ssh YOUR_USER_NAME@192.168.9.99 # 内网
-ssh -p 39099 YOUR_USER_NAME@202.38.69.241 # 外网
-
-# 进入调试节点开启容器进行调试
-ssh g101
-sudo docker images
-startdocker -u "-it -v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/xx" -c /bin/bash bit:5000/deepo_9
-sudo docker ps -a
-
-
-# 提交任务并查看
-ssh gwork
-# 编写pbs;startdocker -u "-v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/UltraNet/pointnet" -c "python train.py" bit:5000/deepo
-qsub xx.pbs
-qstat
-chk_gpuused # 查看gpu使用情况
-chk_gpu <结点名> # 查看可用资源
-qdel
-sudo chk_res <结点名> <用户名> # 查看job资源是否正确释放
-
-# 数据传输
-
-# 使用tensorborad
-id # 获取自己的用户id, port即为自己的id
-tensorboard --logdir <log-path> --port id # gwork运行
-#在外网访问 202.38.69.241:id,
-#内网则可以直接访问 192.168.9.99:id
-
-```
-
 ## 0. 预备知识
 
 ### 集群与分布式的概念
@@ -590,7 +557,21 @@ qsub myjob.pbs
 
   - docker hub上包含许多别人已经制作好的镜像，可以直接下载后使用。你也可以将自己经常使用的环境制作成镜像后上传到docker hub，由管理员下载到本地。--疑问：我们在自己的电脑使用docker之前，已经安装好了显卡驱动，制作自己的镜像时，进行的是和硬件平台无关的操作：如安装某一版本的cuda，安装tensorflow等，因此，应该不用担心你自己在你电脑上制作的镜像装到集群上不能用，除非集群上的显卡驱动版本过低，你要使用的cuda版本和此显卡驱动不兼容。另外，应该有英伟达官方出的基于自己的显卡安装好了tensorflow等环境的相关镜像，我们应该避免自己完全从零开始制作镜像。--具体步骤可以研究nvidia-docker之后进行尝试。
 
--  第二种方式是基于集群上的镜像使用Dockerfile build生成，申请时需要给出基于的镜像名称和要增加的内容。
+- 第二种方式是基于集群上的镜像使用Dockerfile build生成，申请时需要给出基于的镜像名称和要增加的内容。、
+
+  步骤1：请管理员开容器
+
+  ```
+  @管理员_朱宏民 您好，能否帮忙开一个root权限容器，挂载 /gdata/wangshuai，基于镜像 bit:5000/ws-py3-tf-keras, 谢谢！
+  ```
+
+  步骤2：进入容器调试
+
+  ```
+  
+  ```
+
+  
 
   ```
   1. 为了方便Dockerfile的编写，首先告诉管理员你要基于哪个镜像进行修改，请管理员用root身份给你开启一个基于此镜像的container
@@ -622,84 +603,6 @@ qsub myjob.pbs
   ```
 
 bit:5000/deep_9
-
-```
-absl-py          0.2.2                 
-astor            0.6.2                 
-backcall         0.1.0                 
-bleach           1.5.0                 
-certifi          2018.4.16             
-chainer          4.0.0                 
-chardet          3.0.4                 
-cntk-gpu         2.5.1                 
-cupy             4.0.0                 
-cycler           0.10.0                
-Cython           0.28.2                
-decorator        4.3.0                 
-dm-sonnet        1.20                  
-fastrlock        0.3                   
-filelock         3.0.4                 
-future           0.16.0                
-gast             0.2.0                 
-graphviz         0.8.3                 
-grpcio           1.12.0                
-h5py             2.7.1                 
-html5lib         0.9999999             
-idna             2.6                   
-ipython          6.4.0                 
-ipython-genutils 0.2.0                 
-jedi             0.12.0                
-Keras            2.1.6                 
-kiwisolver       1.0.1                 
-Lasagne          0.2.dev1              
-leveldb          0.194                 
-Mako             1.0.7                 
-Markdown         2.6.11                
-MarkupSafe       1.0                   
-matplotlib       2.2.2                 
-mxnet-cu90       1.2.0                 
-networkx         2.1                   
-nose             1.3.7                 
-numpy            1.14.3                
-pandas           0.23.0                
-parso            0.2.1                 
-pexpect          4.5.0                 
-pickleshare      0.7.4                 
-Pillow           5.1.0                 
-pip              10.0.1                
-prompt-toolkit   1.0.15                
-protobuf         3.5.2.post1           
-ptyprocess       0.5.2                 
-pycurl           7.43.0                
-Pygments         2.2.0                 
-pygobject        3.20.0                
-pygpu            0.7.6                 
-pyparsing        2.2.0                 
-python-apt       1.1.0b1+ubuntu0.16.4.1
-python-dateutil  2.7.3                 
-python-gflags    3.1.2                 
-pytz             2018.4                
-PyWavelets       0.5.2                 
-PyYAML           3.12                  
-requests         2.18.4                
-scikit-image     0.13.1                
-scikit-learn     0.19.1                
-scipy            1.1.0                 
-setuptools       39.2.0                
-simplegeneric    0.8.1                 
-six              1.11.0                
-tensorboard      1.8.0                 
-tensorflow-gpu   1.8.0                 
-termcolor        1.1.0                 
-Theano           1.0.1                 
-torch            0.4.0                 
-torchvision      0.2.1                 
-traitlets        4.3.2                 
-urllib3          1.22                  
-wcwidth          0.1.7                 
-Werkzeug         0.14.1                
-wheel            0.31.1   
-```
 
 我的镜像：bit:5000/ws-py3-tf-keras
 
