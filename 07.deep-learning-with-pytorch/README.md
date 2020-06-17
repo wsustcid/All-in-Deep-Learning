@@ -2,25 +2,15 @@
 
 ## 1. Quick Start
 
-**Objects：**
+官方中文文档地址：<https://pytorch.apachecn.org/>
 
-- 用最快的时间，掌握pytorch最核心的用法；
-- 知道训练一个网络的完整代码的构成部分，整体写代码的流程心中有数；
-- 能够阅读懂别人的代码。(别人的代码中有的地方可能还看不懂，比如一些高级操作，主体部分能够看懂，其他少量操作可以通过检索学习)
+PyTorch 深度学习: 60 分钟极速入门
 
-**Steps：**
-
-1. 查看中文快速入门教程，如官网的60min入门教程（注意学技术刚开始可以看中文资料，解决疑问看英文）
-
-   - 官方中文文档地址：<https://pytorch.apachecn.org/>
-
-     先完成如下部分：PyTorch 深度学习: 60 分钟极速入门
-
-     - [什么是 PyTorch？](https://pytorch.apachecn.org/docs/1.0/blitz_tensor_tutorial.html)
-     - [Autograd：自动求导](https://pytorch.apachecn.org/docs/1.0/blitz_autograd_tutorial.html)
-     - [神经网络](https://pytorch.apachecn.org/docs/1.0/blitz_neural_networks_tutorial.html)
-     - [训练分类器](https://pytorch.apachecn.org/docs/1.0/blitz_cifar10_tutorial.html)
-     - [可选：数据并行处理](https://pytorch.apachecn.org/docs/1.0/blitz_data_parallel_tutorial.html)
+- [什么是 PyTorch？](https://pytorch.apachecn.org/docs/1.0/blitz_tensor_tutorial.html)
+- [Autograd：自动求导](https://pytorch.apachecn.org/docs/1.0/blitz_autograd_tutorial.html)
+- [神经网络](https://pytorch.apachecn.org/docs/1.0/blitz_neural_networks_tutorial.html)
+- [训练分类器](https://pytorch.apachecn.org/docs/1.0/blitz_cifar10_tutorial.html)
+- [可选：数据并行处理](https://pytorch.apachecn.org/docs/1.0/blitz_data_parallel_tutorial.html)
 
 ## 2. Start to Use
 

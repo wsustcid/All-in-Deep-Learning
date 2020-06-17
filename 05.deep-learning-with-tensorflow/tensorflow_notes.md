@@ -1,8 +1,40 @@
 # tf
 Resources:
 - [TensorFlow 1.15 api_docs](https://www.tensorflow.org/versions/r1.15/api_docs/python/tf)
-
 - [TensorFlow newest api_docs](https://www.tensorflow.org/api_docs/python/tf)
+
+
+
+测试：
+
+```python
+import tensorflow as tf
+# broadcaseet 测试
+
+#define tensors
+a=tf.constant([[10,20],[30,40]]) #Dimension 2X2
+b=tf.constant([5])
+c=tf.constant([2,2])
+d=tf.constant([[3],[3]])
+
+sess=tf.Session() #start a session
+
+#Run tensors to generate arrays
+mat,scalar,one_d,two_d = sess.run([a,b,c,d])
+
+#broadcast multiplication with scalar
+sess.run(tf.multiply(mat,scalar))
+
+#broadcast multiplication with 1_D array (Dimension 1X2)
+sess.run(tf.multiply(mat,one_d))
+
+#broadcast multiply 2_d array (Dimension 2X1)
+sess.run(tf.multiply(mat,two_d))
+
+sess.close()
+```
+
+
 
 ## Variable
 ### tf.Variable 

@@ -460,21 +460,24 @@ python2 -m pip install ipykernel==4.10 --user
 virtualenv --no-site-packages -p python3 pytorch
 # 激活虚拟环境
 source pytorch/bin/activate
-# 根据你自己的软件环境，按照官网https://pytorch.org/给出的指令进行安装对应版本的pytorch
-# 我电脑的cuda 版本是9.0，官网最新版本的pytroch最低要求9.2，懒得升级了，我直接安装cpu版本的
-pip3 install torch==1.3.0+cpu torchvision==0.4.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
-    
+# 根据你自己的软件环境，按照官网https://pytorch.org/get-started/locally/给出的指令进行安装对应版本的pytorch
+# 我电脑的cuda 版本是9.0，所以需要安装旧9.0版本
+1. Open the link https://download.pytorch.org/whl/cu90/torch_stable.html in a browser
+Go into the source
+2. Download the appropriate version. 
+  - torch-1.1.0-cp35-cp35m-linux_x86_64.whl
+  - torchvision-0.3.0-cp35-cp35m-manylinux1_x86_64.whl
+3. cd the download folder and Install via 
+  pip install [downloaded .whl file].
+
 # 查看是否安装成功
 python
 >>> import torch
 >>> print(torch.__version__)
-1.3.0+cpu
 >>> print(torch.cuda.is_available())
-False
-
 ```
 
-![](assets/install.png)
+
 
 # Other Useful Packages
 

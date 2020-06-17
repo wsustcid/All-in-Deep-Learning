@@ -14,6 +14,7 @@ ssh -p 37240 username@202.38.69.241 # 初始密码a123456, passwd修改密码
 ssh gproc # 或从gwork节点进入
 
 # 数据传输
+zip -r file.zip file #压缩数据
 scp -P 37240 wangshuai@202.38.69.241:remote_file local_folder #1. 从集群下载数据
 scp -P 37240 local_file wangshuai@202.38.69.241:remote_folder #2. 往集群传数据
 md5sum local_file #3. 数据完整性校验
@@ -23,26 +24,29 @@ unzip -d folder_name file.zip #4. 解压缩
 # 进入调试节点开启容器进行调试
 ssh g101 # 从gwork 节点进入
 sudo docker images # 查看现有镜像
-startdocker -u "-it -v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/xx" -c /bin/bash bit:5000/deepo_9 # 或使用 bit:5000/ws-py3-tf-keras
-startdocker -u "-it -v /gdata/用户名:/gdata/用户名 -v /gpub/ImageNet-Caffe:/gpub/ImageNet-Caffe" -c /bin/bash bit:5000/deepo # 可使用多个-v命令
-startdocker -u "-v /gdata/用户名:/gdata/用户名 -v /gpub/ImageNet-Caffe:/gpub/ImageNet-Caffe" -s /ghome/用户名/run.sh bit:5000/deepo # 运行脚本文件
-startdocker  -D <my-data-path> -P <my-proc-config-path> -s <my-script-file> bit:5000/deepo # 更通用的指令
-startdocker -u "--ipc=host -v /gpub/leftImg8bit_sequence:/gpub/leftImg8bit_sequence --shm-size 8G" -D "/gdata/jinlk" -s "/ghome/jinlk/VSS/DVSNet_pytorch/scripts/train_feat2_df_with_scale_4.sh" bit:5000/deepo_9 # 示例
+startdocker -u "-it -v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/xx" -c /bin/bash bit:5000/deepo_9 # 或使用 bit:5000/ws-py3-tf-keras; 可使用多个-v命令挂载多个
+
 
 sudo docker ps # 查看正在运行的容器
 sudo docker ps -a # 查看所有容器
 exit # 正常退出容器并销毁
-close terminal directly # 非正常退出容器，方便下次使用 （探索官方不销毁容器的方法）
+close terminal directly # 非正常退出容器，方便下次使用 （但这样是有风险的，容器无法自动删除，如果你挂载了你的gdata，然后你在gwork节点就对gdata没有写权限了，容器里才有，就要请管理员手动删除--貌似不手动删除过一会就又好了？下次申请容器时不挂载数据试试）
 
 # 提交任务并查看
 ssh gwork
-startdocker -u "-v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/UltraNet/pointnet" -c "python train.py" bit:5000/deepo # 编写pbs;
-qsub xx.pbs
-qstat # 查看任务状态
-chk_gpuused # 查看gpu使用情况
+startdocker -u "-v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/UltraNet/pointnet" -c "python train.py" bit:5000/deepo # 编写pbs; 通过python解释器运行
+
+startdocker -u "-v /gdata/用户名:/gdata/用户名 -v /gpub/ImageNet-Caffe:/gpub/ImageNet-Caffe" -s /ghome/用户名/run.sh bit:5000/deepo # 直接运行脚本文件
+
+startdocker  -D <my-data-path> -P <my-proc-config-path> -s <my-script-file> bit:5000/deepo # 更通用的指令
+startdocker -u "--ipc=host -v /gpub/leftImg8bit_sequence:/gpub/leftImg8bit_sequence --shm-size 8G" -D "/gdata/jinlk" -s "/ghome/jinlk/VSS/DVSNet_pytorch/scripts/train_feat2_df_with_scale_4.sh" bit:5000/ws-py3-tf-keras # 示例
 chk_gpu <结点名> # 查看可用资源
+qsub xx.pbs # 提交任务
+qstat # 查看任务状态
 qdel # 中止任务
 sudo chk_res <结点名> <用户名> # 查看job资源是否正确释放
+chk_gpuused # 查看gpu使用情况
+
 
 
 # 使用tensorborad
@@ -57,6 +61,9 @@ sudo docker attach container_name #2.进入容器调试
 sudo docker start CONTAINER_ID/CONTAINER_NAME #3.重启已经关闭的容器
 在自己的根目录下面建立一个dockertmp子目录并编辑 Dockerfile #4.Dockerfile
 @管理员_朱宏民 您好，能否帮忙build一个镜像，路径在 /ghome/wangshuai/dockertmp/Dockerfile, 基础镜像为bit:5000/ws-py3-tf-keras,新增加包为: laspy等点云处理包，命名为 bit:5000/ws-py3-tf-keras, 谢谢！ #5. 请管理员帮忙编译
+
+# 
+# 1. 模型文件无删除权限可以通过root容器删除
 
 ## 图形界面登录
 # 1. 本地Linux系统文件管理器 -> 连接到服务器 -> 输入对应文件夹网址 -> 输入用户名和密码
@@ -142,7 +149,7 @@ RUN pip install keras_applications==1.0.7 --no-deps && \
 ```dockerfile
 FROM bit:5000/ws-py3-tf-keras
 RUN pip install laspy && \
-    pip install Pillow==2.2.1 && \
+    pip install Pillow==2.2.1 && \ # 下次编译镜像恢复原始版本！！
     pip install seaborn && \ 
     pip install ffmpeg-python && \
     pip install imageio && \
