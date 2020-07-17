@@ -26,8 +26,13 @@ CUDA：是Nvidia推出的只能用于自家GPU的并行计算框架。只有安�
 
 2. 本次安装：
 
-   ```
+   ```python
    CUDA 9.0 + cuDNN 7.1 + tensorflow-gpu 1.9
+   
+   # new version
+   PyTorch: 1.1
+   CUDA: 10.0
+   CUDNN: 7.5.0
    ```
 
 3. cuda & driver version
@@ -128,6 +133,7 @@ nvidia-settings #若弹出设置对话框，亦表示驱动安装成功
 
 
 ## 1.3 Install CUDA
+https://tygasoft.com/solution-of-coexistence-of-cuda-100-and-cuda-101.html
 
 - 查看你显卡驱动的版本，然后去Nvidia官网下载相对应版本的CUDA包，选择.run文件，因为deb会把之前显卡驱动的版本给覆盖掉，可能会出很多的问题，运行run文件
 
@@ -172,8 +178,6 @@ nvidia-settings #若弹出设置对话框，亦表示驱动安装成功
   export CUDA_HOME=$CUDA_HOME:/usr/local/cuda-9.0
   ```
 
-  
-
 - 测试是否安装成功： cd到CUDA样例里，NVIDIA_CUDA-9.0_Samples，然后其实可以全部make一下所有样例，时间比较长，但也可以cd到单独样例里然后make
 
   - 全部编译：
@@ -203,6 +207,25 @@ nvidia-settings #若弹出设置对话框，亦表示驱动安装成功
 
     输出大概长这样：PASS就是成功了。
 
+- 安裝nvcc
+
+  ```
+  # 暫時不知道幹什麼用的
+  sudo apt install nvidia-cuda-toolkit
+  ```
+
+- cuda 卸载
+
+  ```
+  sudo apt-get remove cuda*
+  sudo apt autoremove （这句命令慎用，有可能把ros等环境给弄坏了）
+  
+  cd /usr/local/
+  sudo rm -r cuda*
+  
+  ```
+
+
 ## 1.4 Install cuDNN
 
 1. 仍然去官网下载source，<https://developer.nvidia.com/rdp/cudnn-download>下载第一个，就是cuDNN v7.1.4 Library for Linux
@@ -224,6 +247,23 @@ sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
 这样就成功了。测试的话去官网下载下来例程跑一下就OK了*-
 
 # 2. Set your development environment
+
+update:
+
+```python
+# using venv with python3.6
+#First make sure you have python3.6 installed, otherwise you can install it with command:
+sudo add-apt-repository ppa:deadsnakes/ppa   
+sudo apt-get update   
+sudo apt install python3.6
+
+#Now install venv i.e
+sudo apt-get install python3.6-venv python3.6-dev
+python3.6 -m venv venv_name
+#You can install python3.7/3.8 and also respective venv with above comman, just replace 3.6 with 3.X
+```
+
+
 
 ## 2.1 Python, pip, and virtualenv
 
@@ -341,7 +381,6 @@ The pip install command also supports a --pre flag that will enable installing p
   pip install keras==2.1.6
   ```
 
-  
 
 # 5. Jupyter notebook
 

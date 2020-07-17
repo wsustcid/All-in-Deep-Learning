@@ -17,6 +17,7 @@ ssh gproc # 或从gwork节点进入
 zip -r file.zip file #压缩数据
 scp -P 37240 wangshuai@202.38.69.241:remote_file local_folder #1. 从集群下载数据
 scp -P 37240 local_file wangshuai@202.38.69.241:remote_folder #2. 往集群传数据
+# -r 下载文件夹
 md5sum local_file #3. 数据完整性校验
 md5sum remote_file
 unzip -d folder_name file.zip #4. 解压缩
@@ -56,7 +57,7 @@ tensorboard --logdir <log-path> --port id # gwork运行
 
 
 # 自定义镜像
-@管理员_朱宏民 您好，能否帮忙开一个root权限容器，挂载 /gdata/wangshuai，基于镜像 bit:5000/ws-py3-tf-keras, 谢谢！#1.请管理员开容器
+@管理员_朱宏民 您好，能否帮忙开一个root容器，挂载 /gdata/wangshuai，基于镜像 bit:5000/ws-py3-tf-keras, 谢谢！#1.请管理员开容器
 sudo docker attach container_name #2.进入容器调试
 sudo docker start CONTAINER_ID/CONTAINER_NAME #3.重启已经关闭的容器
 在自己的根目录下面建立一个dockertmp子目录并编辑 Dockerfile #4.Dockerfile
