@@ -49,11 +49,25 @@ sudo chk_res <结点名> <用户名> # 查看job资源是否正确释放
 chk_gpuused # 查看gpu使用情况
 
 
+## 多卡调试 (G101默认仅分配一块GPU卡，由 login 时随机决定)
+ssh g101
+echo $CUDA_VISIBLE_DEVICES # 查看所分配卡的物理编号
+nvidia-smi # 查看空闲的卡编号
+export CUDA_VISIBLE_DEVICES="0,1,3,5" # 设置使用多卡
+# 注意： 在容器内的代码中无需在意CUDA_VISIBLE_DEVICES的值，也禁止改变它，容器内使用GPUid时，总是从0编号，和实际的物理卡ID无关。例如，某用户登录后echo $CUDA_VISIBLE_DEVICES 发现CUDA_VISIBLE_DEVICES=4，但通过nvidia-smi查看目前3，6卡空闲，则可以通过命令export CUDA_VISIBLE_DEVICES="3,6"来指定可用的物理卡，然后 在containter内部，如pytorch可以通过device 指定cuda:0，cuda:1使用这两块卡。
+startdocker -u "-it -v /gdata/wangshuai:/gdata/wangshuai -w /ghome/wangshuai/xx" -c /bin/bash bit:5000/ws-py3-tf-keras
+
+sudo docker stats <containerid> # 监控开启容器内 内存使用情况 (需新开终端)
+sudo docker exec -it wangshuai /bin/bash # 再次新开终端后登录集群进入容器
+watch nvidia-smi # 监控显存使用情况: 主要监控两个GPU是否同时被使用！
+
+sudo rpt_detail ## 根据walltime计算本月集群任务使用时间
+
 
 # 使用tensorborad
-id # 获取自己的用户id, port即为自己的id
-tensorboard --logdir <log-path> --port id # gwork运行
-202.38.69.241:id #本地浏览器访问
+id # 获取自己的用户id, port即为自己的id (1364)
+tensorboard --logdir <log-path> --port 31364 # gwork运行
+202.38.69.241:31364 #本地浏览器访问
 
 
 # 自定义镜像
